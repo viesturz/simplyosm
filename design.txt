@@ -1,0 +1,61 @@
+Idea:
+Nobody likes relations, right?
+But without them advanced features are impossible.
+So we build customized interfaces to hide the ugly relations.
+Each interface would also enforce strict rules to keep the data consitent.
+
+To do so we split the editing workflow into several highly specialized modes.
+Each mode might introduce new editing paradigms and data primitives, not native to OSM data model.
+Theese primitives will map back to OSM primitives when saved. And be restored on load.
+
+Frameworks:
+ - HTML5.
+ - KineticJS or GXP
+  
+Similar projects (steal here):
+ -  osmeditor (http://stephane-brunner.ch/osmedit.html)
+
+Editing framework:
+ - a stack of tools, each handling separate events, getting grabs if needed.
+ - event travels down the stack until a tool processes it.
+ - undo/redo information is tracked by the custom primitives.
+
+Server:
+ - we will need a proxy at the server for fetching off-site data, submiting data to OSM. Steal from osmeditor.
+
+  
+Common data model (OSM):
+  - Points
+  - Lines
+  - Relations
+  
+Landuses edit mode:
+ - lines
+ - areas (maps to multipolygon relations)
+
+Administrative edit mode:
+ - borders
+ - administrative areas (border + admin centre)
+ - Selectable acctive admin level (country, region, city, suburb,..)
+
+Streets edit mode:
+ - street segments (line between two crossings, plus turn restrictions)
+ - streets (maps to multiple lines with the same street name)
+ - junctions (TODO: need OSM representation first)
+
+Buildings edit mode:
+ - lines (walls)
+ - buildings 
+ - entrances
+ - 
+
+Public transportation edit mode:
+
+
+To decide:
+Rendering: what styling mechanism to use?
+Buggy data loading: It might happen that the loaded data cannot be correctly parsed by the edit mode. Might try to automatically correct the data.
+  
+  
+ Ideas (for later):
+ Maybe make the custom data objects shareable between edit modes.
