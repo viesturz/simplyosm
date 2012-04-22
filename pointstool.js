@@ -1,6 +1,6 @@
-AreaTool = function(){};
+PointsTool = function(){};
 
-AreaTool.prototype = {
+PointsTool.prototype = {
     view: null,
     data: null,
     grabbedPoint: null,
@@ -16,7 +16,7 @@ AreaTool.prototype = {
     },
 
     mousedown: function(canvasX,canvasY){
-        point = this.view.findPoint(canvasX, canvasY);
+        var point = this.view.findPoint(canvasX, canvasY);
 
         if (point){
             this.grabbedPoint = point;
@@ -30,8 +30,8 @@ AreaTool.prototype = {
     },
 
     mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){
-        x = this.view.xToData(canvasX);
-        y = this.view.yToData(canvasY);
+        var x = this.view.xToData(canvasX);
+        var y = this.view.yToData(canvasY);
 
         if (dragging && this.grabbedPoint)
         {
@@ -42,9 +42,9 @@ AreaTool.prototype = {
 
     mouseup: function(canvasX,canvasY){
         if (this.grabbedPoint == null){
-            x = this.view.xToData(canvasX);
-            y = this.view.yToData(canvasY);
-            p = DataStore.newPoint(x,y);
+            var x = this.view.xToData(canvasX);
+            var y = this.view.yToData(canvasY);
+            var p = DataStore.newPoint(x,y);
             this.data.addPoint(p);
             return true;
         }

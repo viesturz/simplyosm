@@ -1,52 +1,43 @@
 <!DOCTYPE HTML>
 <html>
   <head>
+    <script type="text/javascript" src="log4javascript.js"></script>
     <script type="text/javascript" src="data.js"></script>
     <script type="text/javascript" src="view.js"></script>
-      <script type="text/javascript" src="areatool.js"></script>
+      <script type="text/javascript" src="pointstool.js"></script>
+      <script type="text/javascript" src="pantool.js"></script>
       <!--    <script type="text/javascript" src="render.js"></script> -->
       <script>
-    window.onload = function() { 
+    log  = log4javascript.getLogger("main");
+    var appender = new log4javascript.InPageAppender("logging", false, false, true, "100%", "700px");
+    log.addAppender(appender);
 
-      canvas = document.getElementById("mapCanvas");
-      data = DataStore.newStore();
-      view = new View(canvas, data);
-      view.setTool(new AreaTool());
+    window.onload = function() {
+
+      var canvas = document.getElementById("mapCanvas");
+      var data = DataStore.newStore();
+      var view = new View(canvas, data);
+
+      view.addTool(new PanTool());
+      view.addTool(new PointsTool());
       view.paint();
+
+      log.info("Editor loaded");
     };
     </script>
   </head>
   <body>
-    <div ><canvas id="mapCanvas" width="500" height="500"></canvas>bla</div>
-   <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
-    <p>bla</p>
+   <table border=1>
+       <tr>
+           <td>
+              <p> Editor</p>
+              <div ><canvas id="mapCanvas" width="700" height="700"></canvas></div>
+           </td>
+           <td width=100% valign=top>
+               <p> Debug log:</p>
+               <div id="logging"> </div>
+           </td>
+       </tr>
+   </table>
   </body>
 </html>

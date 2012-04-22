@@ -10,7 +10,7 @@ Theese primitives will map back to OSM primitives when saved. And be restored on
 
 Frameworks:
  - HTML5.
- - KineticJS or GXP
+ - Maybe OpenLayers?
   
 Similar projects (steal here):
  -  osmeditor (http://stephane-brunner.ch/osmedit.html)
@@ -57,5 +57,5 @@ Rendering: what styling mechanism to use?
 Buggy data loading: It might happen that the loaded data cannot be correctly parsed by the edit mode. Might try to automatically correct the data.
   
   
- Ideas (for later):
+Ideas (for later):
  Maybe make the custom data objects shareable between edit modes.
