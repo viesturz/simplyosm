@@ -1,0 +1,4 @@
+- Start building LineTool.
+
+- Investigate OpenLayers libary for rendering and event handling.
+  Would also be nice because they have support for rendering existing stuff.
