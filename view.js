@@ -14,10 +14,12 @@ View = function(canvas, data){
 };
 
 View.prototype={
-    data:null,
     canvas: null,
     canvasWidth:0,
     canvasHeight:0,
+
+    data:null,
+    selection:[],
 
     context: null,
     prevX: null,
@@ -56,6 +58,10 @@ View.prototype={
         this.centerY += y - y1;
     },
 
+    setSelected: function(p){
+        this.selection = [p];
+    },
+
     pan: function(canvasDx, canvasDy){
         this.centerX -= canvasDx / this.zoom;
         this.centerY -= canvasDy / this.zoom;
@@ -63,16 +69,45 @@ View.prototype={
 
     paint: function(){
         this.context.clearRect(0,0,this.canvasWidth, this.canvasHeight);
+        var i;
+        var x;
+        var y;
 
-        for (var i = 0; i < this.data.points.length; i++){
+        for (i = 0; i < this.data.lines.length; i++){
+            var line = this.data.lines[i];
+            if (line.points.length < 2) continue;
+
+            this.context.beginPath();
+            x = this.xToCanvas(line.points[0].x);
+            y = this.yToCanvas(line.points[0].y);
+            this.context.moveTo(x,y);
+
+            for (var j = 1; j < line.points.length; j++){
+                x = this.xToCanvas(line.points[j].x);
+                y = this.yToCanvas(line.points[j].y);
+                this.context.lineTo(x,y);
+            }
+
+            this.context.lineWidth = 2;
+            if (this.selection.indexOf(line) != -1)
+                this.context.strokeStyle='#F33';
+            else
+                this.context.strokeStyle='#666666';
+            this.context.stroke();
+        }
+
+        for (i = 0; i < this.data.points.length; i++){
             var p = this.data.points[i];
-            var x = this.xToCanvas(p.x);
-            var y = this.yToCanvas(p.y);
+            x = this.xToCanvas(p.x);
+            y = this.yToCanvas(p.y);
             this.context.beginPath();
             this.context.arc(x,y,5, 0, 2*Math.PI, false);
-            this.context.fillStyle='#666666';
+
+            if (this.selection.indexOf(p) != -1)
+                this.context.fillStyle='#F33';
+            else
+                this.context.fillStyle='#666666';
             this.context.fill();
-            this.context.stroke();
         }
     },
 
@@ -110,6 +145,7 @@ View.prototype={
                 break;
             }
         }
+        evt.preventDefault();
     },
 
     handleMouseUp: function(evt){
@@ -178,7 +214,8 @@ View.prototype={
 
         this.prevX = x;
         this.prevY = y;
-     },
+        evt.preventDefault();
+    },
 
 
     handleMouseWheel: function(evt){
@@ -190,4 +227,4 @@ View.prototype={
         this.paint();
         evt.preventDefault();
     }
-}
+};

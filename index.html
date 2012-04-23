@@ -5,6 +5,7 @@
     <script type="text/javascript" src="data.js"></script>
     <script type="text/javascript" src="view.js"></script>
       <script type="text/javascript" src="pointstool.js"></script>
+      <script type="text/javascript" src="linetool.js"></script>
       <script type="text/javascript" src="pantool.js"></script>
       <!--    <script type="text/javascript" src="render.js"></script> -->
       <script>
@@ -19,7 +20,7 @@
       var view = new View(canvas, data);
 
       view.addTool(new PanTool());
-      view.addTool(new PointsTool());
+      view.addTool(new LinesTool());
       view.paint();
 
       log.info("Editor loaded");
