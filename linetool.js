@@ -1,3 +1,146 @@
+SelectOnClickTool = function(){};
+
+SelectOnClickTool.prototype = {
+    attach: function(view){
+        this.view = view;
+        this.data = view.data;
+    },
+
+    mousedown: function(canvasX,canvasY){
+        var point = this.view.findPoint(canvasX, canvasY);
+
+        if (point){
+            this.view.setSelected([point]);
+            return false;
+        }
+        else
+        {
+            this.view.setSelected([]);
+            return false;
+        }
+    },
+
+    mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){},
+    mouseup: function(canvasX,canvasY){}
+
+};
+
+DragPointsTool = function(){};
+DragPointsTool.prototype= {
+    attach: function(view){
+        this.isDragging = false;
+        this.view = view;
+        this.data = view.data;
+        this.point = null;
+    },
+
+    mousedown: function(canvasX,canvasY){},
+
+    mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){
+
+        if (!dragging)
+            return null;
+
+        if (!this.isDragging)
+        {
+            var p = this.view.findPoint(canvasXPrev, canvasYPrev);
+            if (dragging && p){
+                this.isDragging = true;
+                this.point = p;
+            }
+        }
+
+        if (this.isDragging && dragging)
+        {
+            var x = this.view.xToData(canvasX);
+            var y = this.view.yToData(canvasY);
+            this.data.movePoint(this.point, x, y);
+            var p = this.view.findPoint(canvasX, canvasY, this.point);
+            if (p)
+                this.view.setSelected([this.point, p]);
+            else
+                this.view.setSelected([this.point]);
+            return true;
+        }
+    },
+
+    mouseup: function(canvasX,canvasY){
+        if (this.isDragging)
+        {
+            this.isDragging = false;
+            this.activeLine = null;
+            this.lastPoint = null;
+            this.newPoint = null;
+
+            var p = this.view.findPoint(canvasX, canvasY, this.point);
+
+            if (p)
+            {
+                this.data.mergePoints(this.point, p);
+            }
+
+            this.view.setSelected([this.point]);
+
+            this.isDragging = false;
+
+            return false;
+        }
+    }
+};
+
+CreatePointsTool = function(){};
+CreatePointsTool.prototype = {
+    attach: function(view){
+        this.view = view;
+        this.data = view.data;
+    },
+
+
+    mousedown: function(canvasX,canvasY){},
+    mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){},
+
+    mouseup: function(canvasX,canvasY){
+        var p = this.view.findPoint(canvasX, canvasY, this.point);
+
+        if (!p)
+        {
+            var x = this.view.xToData(canvasX);
+            var y = this.view.yToData(canvasY);
+            p = this.data.newPoint(x,y);
+            this.view.setSelected([p]);
+        }
+
+        return false;
+    }
+};
+
+
+CreateLinesTool = function(){};
+DrawLinesTool.prototype = {
+    attach: function(view){
+        this.view = view;
+        this.data = view.data;
+    },
+
+
+    mousedown: function(canvasX,canvasY){},
+    mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){},
+
+    mouseup: function(canvasX,canvasY){
+        var p = this.view.findPoint(canvasX, canvasY, this.point);
+
+        if (!p)
+        {
+            var x = this.view.xToData(canvasX);
+            var y = this.view.yToData(canvasY);
+            p = this.data.newPoint(x,y);
+            this.view.setSelected([p]);
+        }
+
+        return false;
+    }
+};
+
 LinesTool = function(){};
 
 LinesTool.prototype = {
@@ -5,6 +148,7 @@ LinesTool.prototype = {
     data: null,
     lastPoint: null,
     newPoint: null,
+    activeLine: null,
     isDragging: false,
 
     attach: function(view){
@@ -12,6 +156,7 @@ LinesTool.prototype = {
         this.data = view.data;
         this.lastPoint = null;
         this.newPoint = null;
+        this.activeLine = null;
     },
 
     detach: function()
@@ -41,13 +186,13 @@ LinesTool.prototype = {
 
             if (point){
                 this.lastPoint = point;
-                this.view.setSelected(point);
+                this.view.setSelected([point]);
                 return true;
             }
             else
             {
                 this.lastPoint = null;
-                return false;
+                return null;
             }
         }
     },

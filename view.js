@@ -58,12 +58,8 @@ View.prototype={
         this.centerY += y - y1;
     },
 
-    setSelected: function(p){
-        this.selection = [p];
-    },
-
-    addSelected: function(p){
-        this.selection.push(p);
+    setSelected: function(list){
+        this.selection = list;
     },
 
     pan: function(canvasDx, canvasDy){
@@ -107,9 +103,13 @@ View.prototype={
         }
     },
 
-    findPoint: function(canvasX, canvasY){
+    findPoint: function(canvasX, canvasY, ignoreThis){
         for (var i = this.data.points.length -1; i >=0; i--){
             var p = this.data.points[i];
+
+            if (p == ignoreThis)
+                continue;
+
             var dx = this.xToCanvas(p.x) - canvasX;
             var dy = this.yToCanvas(p.y) - canvasY;
             if (dx * dx + dy* dy < 5*5)
@@ -129,6 +129,7 @@ View.prototype={
     handleMouseDown: function(evt){
         var x = evt.offsetX;
         var y = evt.offsetY;
+        var handled = false;
 
         if (this.activeTool)
         {
@@ -136,10 +137,10 @@ View.prototype={
             if (r == false)
                 this.activeTool = null;
             if (r == true || r == false)
-                this.paint();
+                this.handled = true;
         }
 
-        if (this.activeTool == null)
+        if (!handled)
         for(var i = this.tools.length - 1; i >= 0; i --)
         {
             var tool = this.tools[i];
@@ -148,16 +149,23 @@ View.prototype={
                 this.activeTool = tool;
             if (r == true || r == false)
             {
-                this.paint();
+                this.handled = true;
                 break;
             }
         }
+
+        if (handled)
+        {
+            this.paint();
+        }
+
         evt.preventDefault();
     },
 
     handleMouseUp: function(evt){
         var x = evt.offsetX;
         var y = evt.offsetY;
+        var handled = false;
 
         if (this.activeTool)
         {
@@ -165,9 +173,10 @@ View.prototype={
             if (r == false)
                 this.activeTool = null;
             if (r == true || r == false)
-                this.paint();
+                handled = true;
         }
-        else for(var i = this.tools.length - 1; i >= 0; i --)
+
+        if (!handled) for(var i = this.tools.length - 1; i >= 0; i --)
         {
             var tool = this.tools[i];
             var r = tool.mouseup(x,y);
@@ -175,12 +184,16 @@ View.prototype={
                 this.activeTool = tool;
             if (r == true || r == false)
             {
-                this.paint();
+                handled = true;
                 break;
             }
         }
 
-        this.activeTool = null;
+        if (handled)
+        {
+            this.paint();
+        }
+
         evt.preventDefault();
     },
 
@@ -188,6 +201,7 @@ View.prototype={
         var x = evt.offsetX;
         var y = evt.offsetY;
         var buttons = evt.which;
+        var handled = false;
 
         //drag delay - do not react on tiny drags.
         if (buttons && !this.activeTool  && this.prevX != null)
@@ -207,10 +221,10 @@ View.prototype={
             if (r == false)
                 this.activeTool = null;
             if (r == true || r == false)
-                this.paint();
+                handled = true;
         }
 
-        if (!this.activeTool)
+        if (!handled)
         for(var i = this.tools.length - 1; i >= 0; i --)
         {
             var tool = this.tools[i];
@@ -219,9 +233,14 @@ View.prototype={
                 this.activeTool = tool;
             if (r == true || r == false)
             {
-                this.paint();
+                handled = true;
                 break;
             }
+        }
+
+        if (handled)
+        {
+            this.paint();
         }
 
         this.prevX = x;

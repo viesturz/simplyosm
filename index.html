@@ -20,7 +20,11 @@
       var view = new View(canvas, data);
 
       view.addTool(new PanTool());
-      view.addTool(new LinesTool());
+      view.addTool(new CreatePointsTool());
+      view.addTool(new DragPointsTool());
+      view.addTool(new SelectOnClickTool());
+
+        //view.addTool(new LinesTool());
       view.paint();
 
       log.info("Editor loaded");

@@ -18,14 +18,24 @@ AreasData.prototype = {
         return l;
     },
 
-    removeSegment: function(segment){
-        var i = this.lines.indexOf(segment);
+    removePoint: function(p){
+        var i = this.points.indexOf(p);
         if (i != -1){
-            this.segments.remove(i);
+            this.points.splice(i,1);
+        }
+
+        //TODO: remove adjacent segments
+    },
+
+    removeSegment: function(segment){
+        var i = this.segments.indexOf(segment);
+        if (i != -1){
+            this.segments.splice(i,1);
         }
 
         segment.disconnect();
     },
+
 
     movePoint: function(p, x, y){
         p.x = x;
@@ -34,6 +44,10 @@ AreasData.prototype = {
     },
 
     mergePoints: function(p0,p1){
+        if (p0 == p1)
+            throw new Error("Cannot merge point to itself.");
+
+
         for (var i = 0; i < p1.segments.length; i ++){
             var s = p1.segments[i];
             var pp = s.otherEnd(p1);
@@ -45,9 +59,61 @@ AreasData.prototype = {
                 s.changeEnd(p1, p0);
             }
         }
-        return p0;
-    }
 
+        this.removePoint(p1);
+
+        return p0;
+    },
+
+    getLineSegments: function(seg){
+        var result = [seg];
+
+        var s = seg;
+        var p = seg.p0;
+
+        while(p.segments.length == 2){
+            if (p.segments[0] == s)
+            {
+                s = p.segments[1];
+            }
+            else
+            {
+                s = p.segments[0];
+            }
+
+            p = s.otherEnd(p);
+
+            //prevent infinite loops
+            if (result.indexOf(s) != -1)
+                break;
+            result.push(s);
+        }
+
+        s = seg;
+        p = seg.p1;
+
+
+        while(p.segments.length == 2){
+            if (p.segments[0] == s)
+            {
+                s = p.segments[1];
+            }
+            else
+            {
+                s = p.segments[0];
+            }
+
+            p = s.otherEnd(p);
+
+            //prevent infinite loops
+            if (result.indexOf(s) != -1)
+                break;
+
+            result.push(s);
+        }
+
+        return result;
+    }
 
 };
 
@@ -78,7 +144,7 @@ LineSegment.prototype = {
 
             this.p0.segments.push(this);
         }
-        if (from == this.p1)
+        else if (from == this.p1)
         {
             pos = this.p1.segments.indexOf(this);
             this.p1.segments.splice(pos, 1);
@@ -87,7 +153,10 @@ LineSegment.prototype = {
 
             this.p1.segments.push(this);
         }
-        throw new Error("From not found");
+        else
+        {
+            throw new Error("From not found");
+        }
     },
 
     disconnect: function(){
