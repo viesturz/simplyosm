@@ -41,6 +41,7 @@ LinesTool.prototype = {
 
             if (point){
                 this.lastPoint = point;
+                this.view.setSelected(point);
                 return true;
             }
             else
@@ -54,18 +55,24 @@ LinesTool.prototype = {
     mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){
         var x = this.view.xToData(canvasX);
         var y = this.view.yToData(canvasY);
+        var p = this.view.findPoint(canvasX, canvasY);
+        var processed = false;
 
         if (dragging && this.newPoint)
         {
             this.newPoint.x = x;
             this.newPoint.y = y;
-            return true;
+
+            this.view.setSelected(this.lastPoint);
+            processed = true;
         }
         else if (dragging && this.lastPoint)
         {
             this.data.pointMove(this.lastPoint, x, y);
             this.isDragging = true;
-            return true;
+
+            this.view.setSelected(this.lastPoint);
+            processed = true;
         }
         else if (!dragging && !this.isDragging)
         {
@@ -85,25 +92,43 @@ LinesTool.prototype = {
                 }
 
                 this.view.setSelected(this.activeLine);
-                return true;
+                processed = true;
             }
             else if (this.newPoint && this.activeLine)
             {
                 this.data.pointMove(this.newPoint, x, y);
-                return true;
+                this.view.setSelected(this.activeLine);
+                processed = true;
             }
         }
+
+        if (p && processed)
+        {
+            this.view.addSelected(p);
+        }
+
+        return processed;
     },
 
     mouseup: function(canvasX,canvasY){
-        if (this.isDragging){
+        if (this.isDragging)
+        {
             this.isDragging = false;
             this.activeLine = null;
             this.lastPoint = null;
             this.newPoint = null;
+
+            var p = this.view.findPoint(canvasX, canvasY);
+
+            if (p)
+            {
+
+            }
+
             return false;
         }
-        else if (!this.lastPoint){
+        else if (!this.lastPoint)
+        {
             var x = this.view.xToData(canvasX);
             var y = this.view.yToData(canvasY);
             var p = this.data.newPoint(x,y);
@@ -118,9 +143,16 @@ LinesTool.prototype = {
 
             if (p)
             {
-                var points = this.activeLine.points.slice(0, this.activeLine.points.length - 1);
-                points.push(p);
-                this.data.lineSetPoints(this.activeLine, points);
+                if (p == this.lastPoint && this.activeLine.points.length == 2)
+                {
+                    this.data.removeLine(this.activeLine);
+                }
+                else
+                {
+                    var points = this.activeLine.points.slice(0, this.activeLine.points.length - 1);
+                    points.push(p);
+                    this.data.lineSetPoints(this.activeLine, points);
+                }
                 this.activeLine = null;
                 this.lastPoint = null;
                 this.newPoint = null;

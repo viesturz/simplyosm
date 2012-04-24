@@ -62,6 +62,10 @@ View.prototype={
         this.selection = [p];
     },
 
+    addSelected: function(p){
+        this.selection.push(p);
+    },
+
     pan: function(canvasDx, canvasDy){
         this.centerX -= canvasDx / this.zoom;
         this.centerY -= canvasDy / this.zoom;
