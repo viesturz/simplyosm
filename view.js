@@ -77,20 +77,12 @@ View.prototype={
         var x;
         var y;
 
-        for (i = 0; i < this.data.lines.length; i++){
-            var line = this.data.lines[i];
-            if (line.points.length < 2) continue;
+        for (i = 0; i < this.data.segments.length; i++){
+            var s = this.data.segments[i];
 
             this.context.beginPath();
-            x = this.xToCanvas(line.points[0].x);
-            y = this.yToCanvas(line.points[0].y);
-            this.context.moveTo(x,y);
-
-            for (var j = 1; j < line.points.length; j++){
-                x = this.xToCanvas(line.points[j].x);
-                y = this.yToCanvas(line.points[j].y);
-                this.context.lineTo(x,y);
-            }
+            this.context.moveTo(this.xToCanvas(s.p0.x),this.xToCanvas(s.p0.y));
+            this.context.lineTo(this.xToCanvas(s.p1.x),this.xToCanvas(s.p1.y));
 
             this.context.lineWidth = 2;
             if (this.selection.indexOf(line) != -1)
@@ -138,13 +130,24 @@ View.prototype={
         var x = evt.offsetX;
         var y = evt.offsetY;
 
-        this.activeTool = null;
+        if (this.activeTool)
+        {
+            var r = this.activeTool.mouseup(x,y);
+            if (r == false)
+                this.activeTool = null;
+            if (r == true || r == false)
+                this.paint();
+        }
+
+        if (this.activeTool == null)
         for(var i = this.tools.length - 1; i >= 0; i --)
         {
             var tool = this.tools[i];
-            if (tool.mousedown(x,y))
-            {
+            var r = tool.mousedown(x,y);
+            if (r == true)
                 this.activeTool = tool;
+            if (r == true || r == false)
+            {
                 this.paint();
                 break;
             }
@@ -158,13 +161,19 @@ View.prototype={
 
         if (this.activeTool)
         {
-            this.activeTool.mouseup(x,y);
+            var r = this.activeTool.mouseup(x,y);
+            if (r == false)
+                this.activeTool = null;
+            if (r == true || r == false)
+                this.paint();
         }
         else for(var i = this.tools.length - 1; i >= 0; i --)
         {
             var tool = this.tools[i];
-
-            if (tool.mouseup(x,y))
+            var r = tool.mouseup(x,y);
+            if (r == true)
+                this.activeTool = tool;
+            if (r == true || r == false)
             {
                 this.paint();
                 break;
@@ -194,23 +203,22 @@ View.prototype={
 
         if (this.activeTool)
         {
-            if (this.activeTool.mousemove(x,y,this.prevX,this.prevY, buttons))
-            {
-                this.paint();
-            }
-            else
-            {
+            var r = this.activeTool.mousemove(x,y,this.prevX,this.prevY, buttons);
+            if (r == false)
                 this.activeTool = null;
-            }
+            if (r == true || r == false)
+                this.paint();
         }
 
         if (!this.activeTool)
         for(var i = this.tools.length - 1; i >= 0; i --)
         {
             var tool = this.tools[i];
-            if (tool.mousemove(x,y,this.prevX, this.prevY, buttons))
-            {
+            var r = tool.mousemove(x,y,this.prevX, this.prevY, buttons);
+            if (r == true)
                 this.activeTool = tool;
+            if (r == true || r == false)
+            {
                 this.paint();
                 break;
             }

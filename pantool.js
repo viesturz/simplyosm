@@ -28,5 +28,6 @@ PanTool.prototype = {
     },
 
     mouseup: function(canvasX,canvasY){
+        return false;
     }
-}
+};

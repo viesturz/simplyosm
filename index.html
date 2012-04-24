@@ -16,7 +16,7 @@
     window.onload = function() {
 
       var canvas = document.getElementById("mapCanvas");
-      var data = DataStore.newStore();
+      var data = new AreasData();
       var view = new View(canvas, data);
 
       view.addTool(new PanTool());

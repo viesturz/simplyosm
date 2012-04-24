@@ -4,7 +4,7 @@ LinesTool.prototype = {
     view: null,
     data: null,
     lastPoint: null,
-    activeLine: null,
+    newPoint: null,
     isDragging: false,
 
     attach: function(view){
