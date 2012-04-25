@@ -65,7 +65,6 @@ AddNodeOnLineTool.prototype = {
                 return false;
             }
         }
-
     },
 
     mouseup: function(canvasX,canvasY){},
@@ -108,8 +107,11 @@ DragPointsTool.prototype= {
             var y = this.view.yToData(canvasY);
             this.data.movePoint(this.point, x, y);
             var p = this.view.findPoint(canvasX, canvasY, this.point);
+            var l = this.view.findSegment(canvasX, canvasY, this.point);
             if (p)
                 this.view.setSelected([this.point, p]);
+            else if (l)
+                this.view.setSelected([this.point, l.segment]);
             else
                 this.view.setSelected([this.point]);
             return true;
@@ -126,6 +128,11 @@ DragPointsTool.prototype= {
             if (p)
             {
                 this.data.mergePoints(p, this.point);
+            }
+            else
+            {
+                var l = this.view.findSegment(canvasX, canvasY, this.point);
+                this.data.splitSegment(l.segment, this.point);
             }
 
             this.view.setSelected([this.point]);

@@ -136,7 +136,7 @@ View.prototype={
         for (var i = this.data.segments.length - 1; i >= 0; i--){
             var seg = this.data.segments[i];
 
-            if (seg == ignoreThis)
+            if (ignoreThis && ignoreThis.segments.indexOf(seg) != -1)
                 continue;
 
             var dst = Geometry.distanceToSegment(seg.p0.x, seg.p0.y,seg.p1.x, seg.p1.y, x, y);
