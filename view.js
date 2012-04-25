@@ -192,7 +192,7 @@ View.prototype={
             this.paint();
         }
 
-        //evt.preventDefault();
+        evt.preventDefault();
     },
 
     handleMouseUp: function(evt){
@@ -299,7 +299,7 @@ View.prototype={
         {
             if (this.activeTool){
                 this.activeTool.cancel();
-                this.activeTool = null;
+                this.activeTool = new CancelTool();
                 this.paint();
             }
         }
@@ -315,4 +315,14 @@ View.prototype={
             }
         }
     }
+};
+
+//Cancel tool for cancelling out all actions until mouse is released.
+CancelTool = function(){};
+CancelTool.prototype = {
+    attach: function(view){},
+    mousedown: function(canvasX,canvasY){return false;},
+    mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){return dragging != 0;},
+    mouseup: function(canvasX,canvasY){return false},
+    cancel: function(){}
 };

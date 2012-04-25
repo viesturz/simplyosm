@@ -1,5 +1,4 @@
 SelectOnClickTool = function(){};
-
 SelectOnClickTool.prototype = {
     attach: function(view){
         this.view = view;
@@ -81,6 +80,8 @@ DragPointsTool.prototype= {
         this.view = view;
         this.data = view.data;
         this.point = null;
+        this.oldX = 0;
+        this.oldY = 0;
     },
 
     mousedown: function(canvasX,canvasY){},
@@ -94,6 +95,8 @@ DragPointsTool.prototype= {
         {
             var p = this.view.findPoint(canvasXPrev, canvasYPrev);
             if (dragging && p){
+                this.oldX = p.x;
+                this.oldY = p.y;
                 this.isDragging = true;
                 this.point = p;
             }
@@ -117,9 +120,6 @@ DragPointsTool.prototype= {
         if (this.isDragging)
         {
             this.isDragging = false;
-            this.activeLine = null;
-            this.lastPoint = null;
-            this.newPoint = null;
 
             var p = this.view.findPoint(canvasX, canvasY, this.point);
 
@@ -136,7 +136,14 @@ DragPointsTool.prototype= {
         }
     },
 
-    cancel: function(){}
+    cancel: function(){
+        if (this.isDragging)
+        {
+            this.data.movePoint(this.point, this.oldX, this.oldY);
+            this.isDragging = false;
+            this.point = null;
+        }
+    }
 
 };
 
