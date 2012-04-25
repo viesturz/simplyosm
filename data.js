@@ -47,16 +47,43 @@ AreasData.prototype = {
         if (p0 == p1)
             throw new Error("Cannot merge point to itself.");
 
-
+        //remove direct segments
         for (var i = 0; i < p1.segments.length; i ++){
+
             var s = p1.segments[i];
             var pp = s.otherEnd(p1);
             if (pp == p0){
                 this.removeSegment(s);
+                i --;
+            }
+        }
+
+        var neighborPoints = [];
+        var neighborSegments = [];
+
+        //collect neighbor points of p0;
+        for (var i = 0; i < p0.segments.length; i ++){
+            neighborPoints.push(p0.segments[i].otherEnd(p0));
+            neighborSegments.push(p0.segments[i]);
+        }
+
+
+        //merge remaining segments
+        while (p1.segments.length > 0){
+            var s = p1.segments[p1.segments.length - 1];
+            var pp = s.otherEnd(p1);
+            var segI = neighborPoints.indexOf(pp);
+
+            s.changeEnd(p1, p0);
+
+            if (segI != -1)
+            {
+                this.mergeSegments(neighborSegments[segI], s);
             }
             else
             {
-                s.changeEnd(p1, p0);
+                neighborPoints.push(pp);
+                neighborSegments.push(s);
             }
         }
 

@@ -77,11 +77,11 @@ View.prototype={
             var s = this.data.segments[i];
 
             this.context.beginPath();
-            this.context.moveTo(this.xToCanvas(s.p0.x),this.xToCanvas(s.p0.y));
-            this.context.lineTo(this.xToCanvas(s.p1.x),this.xToCanvas(s.p1.y));
+            this.context.moveTo(this.xToCanvas(s.p0.x),this.yToCanvas(s.p0.y));
+            this.context.lineTo(this.xToCanvas(s.p1.x),this.yToCanvas(s.p1.y));
 
             this.context.lineWidth = 2;
-            if (this.selection.indexOf(line) != -1)
+            if (this.selection.indexOf(s) != -1)
                 this.context.strokeStyle='#F33';
             else
                 this.context.strokeStyle='#666666';
@@ -104,6 +104,10 @@ View.prototype={
     },
 
     findPoint: function(canvasX, canvasY, ignoreThis){
+        var treshold = 5*5;
+        if (ignoreThis)
+          treshold *= 4;
+
         for (var i = this.data.points.length -1; i >=0; i--){
             var p = this.data.points[i];
 
@@ -112,7 +116,7 @@ View.prototype={
 
             var dx = this.xToCanvas(p.x) - canvasX;
             var dy = this.yToCanvas(p.y) - canvasY;
-            if (dx * dx + dy* dy < 5*5)
+            if (dx * dx + dy* dy < treshold)
             {
                 return p;
             }
@@ -133,11 +137,11 @@ View.prototype={
 
         if (this.activeTool)
         {
-            var r = this.activeTool.mouseup(x,y);
+            var r = this.activeTool.mousedown(x,y);
             if (r == false)
                 this.activeTool = null;
             if (r == true || r == false)
-                this.handled = true;
+                handled = true;
         }
 
         if (!handled)
@@ -149,7 +153,7 @@ View.prototype={
                 this.activeTool = tool;
             if (r == true || r == false)
             {
-                this.handled = true;
+                handled = true;
                 break;
             }
         }
