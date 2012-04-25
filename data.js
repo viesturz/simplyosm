@@ -24,7 +24,9 @@ AreasData.prototype = {
             this.points.splice(i,1);
         }
 
-        //TODO: remove adjacent segments
+        while (p.segments.length > 0){
+            this.removeSegment(p.segments[p.segments.length - 1]);
+        }
     },
 
     removeSegment: function(segment){
@@ -36,6 +38,22 @@ AreasData.prototype = {
         segment.disconnect();
     },
 
+    deleteItems: function(itemList){
+
+        //first remove segments
+        for(var i = 0; i < itemList.length; i ++){
+            if (itemList[i].type == "segment"){
+                this.removeSegment(itemList[i]);
+            }
+        }
+
+        //now remove points, otherwise segments will be affected by removed points
+        for(var i = 0; i < itemList.length; i ++){
+            if (itemList[i].type == "point"){
+                this.removePoint(itemList[i]);
+            }
+        }
+    },
 
     movePoint: function(p, x, y){
         p.x = x;
@@ -78,7 +96,7 @@ AreasData.prototype = {
 
             if (segI != -1)
             {
-                this.mergeSegments(neighborSegments[segI], s);
+                this._mergeSegments(neighborSegments[segI], s);
             }
             else
             {
@@ -90,6 +108,18 @@ AreasData.prototype = {
         this.removePoint(p1);
 
         return p0;
+    },
+
+    _mergeSegments: function(s1,s2){
+        //TODO: merge properties
+
+        this.removeSegment(s2);
+    },
+
+    splitSegment: function(segment, point){
+        var seg1 = this.newSegment(segment.p1, point);
+        segment.changeEnd(segment.p1, point);
+        return seg1;
     },
 
     getLineSegments: function(seg){

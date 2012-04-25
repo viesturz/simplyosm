@@ -13,15 +13,64 @@ SelectOnClickTool.prototype = {
             this.view.setSelected([point]);
             return false;
         }
-        else
+
+        return null;
+    },
+
+    mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){
+        if (!dragging)
         {
-            this.view.setSelected([]);
-            return false;
+            var p = this.view.findPoint(canvasX, canvasY);
+            if (p)
+            {
+                this.view.setSelected([p]);
+                return false;
+            }
         }
     },
 
-    mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){},
-    mouseup: function(canvasX,canvasY){}
+    mouseup: function(canvasX,canvasY){},
+    cancel: function(){}
+};
+
+AddNodeOnLineTool = function(){};
+
+AddNodeOnLineTool.prototype = {
+    attach: function(view){
+        this.view = view;
+        this.data = view.data;
+    },
+
+    mousedown: function(canvasX,canvasY){
+        var segment = this.view.findSegment(canvasX, canvasY);
+
+        if (segment){
+            var x = this.view.xToData(canvasX);
+            var y = this.view.yToData(canvasY);
+            var point = this.data.newPoint(x,y);
+            this.data.splitSegment(segment.segment, point);
+            this.view.setSelected([point]);
+            return false;
+        }
+
+        return null;
+    },
+
+    mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){
+        if (!dragging)
+        {
+            var segment = this.view.findSegment(canvasX, canvasY);
+            if (segment)
+            {
+                this.view.setSelected([segment.segment]);
+                return false;
+            }
+        }
+
+    },
+
+    mouseup: function(canvasX,canvasY){},
+    cancel: function(){}
 
 };
 
@@ -76,7 +125,7 @@ DragPointsTool.prototype= {
 
             if (p)
             {
-                this.data.mergePoints(this.point, p);
+                this.data.mergePoints(p, this.point);
             }
 
             this.view.setSelected([this.point]);
@@ -85,7 +134,10 @@ DragPointsTool.prototype= {
 
             return false;
         }
-    }
+    },
+
+    cancel: function(){}
+
 };
 
 CreatePointsTool = function(){};
@@ -113,7 +165,9 @@ CreatePointsTool.prototype = {
 
         //event not processed
         return null;
-    }
+    },
+
+    cancel: function(){}
 };
 
 
@@ -193,6 +247,16 @@ CreateLinesTool.prototype = {
             this.line = this.data.newSegment(p0,this.newPoint);
             this.view.setSelected([this.line, this.newPoint]);
             return true;
+        }
+    },
+
+    cancel: function(){
+        if (this.line){
+            this.data.removeSegment(this.line);
+            this.data.removePoint(this.newPoint);
+            this.line = null;
+            this.newPoint = null;
+            this.view.setSelected([]);
         }
     }
 };

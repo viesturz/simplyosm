@@ -11,6 +11,7 @@ View = function(canvas, data){
     canvas.addEventListener('mouseup', function(e){obj.handleMouseUp(e);});
     canvas.addEventListener('mousemove', function(e){obj.handleMouseMove(e);});
     canvas.addEventListener('mousewheel', function(e){obj.handleMouseWheel(e)});
+    window.addEventListener('keydown', function(e){obj.handleKeyDown(e)}, true);
 };
 
 View.prototype={
@@ -125,6 +126,33 @@ View.prototype={
         return null;
     },
 
+    findSegment: function(canvasX, canvasY, ignoreThis){
+        var treshold = 5*this.zoom;
+        var x = this.xToData(canvasX);
+        var y = this.yToData(canvasY);
+
+        var best = null;
+
+        for (var i = this.data.segments.length - 1; i >= 0; i--){
+            var seg = this.data.segments[i];
+
+            if (seg == ignoreThis)
+                continue;
+
+            var dst = Geometry.distanceToSegment(seg.p0.x, seg.p0.y,seg.p1.x, seg.p1.y, x, y);
+
+            if (dst.distance < treshold)
+            {
+                if (!best || best.distance > dst.distance){
+                    best = dst;
+                    best.segment = seg;
+                }
+            }
+        }
+
+        return best;
+    },
+
     addTool: function(tool){
         this.tools.push(tool);
         tool.attach(this);
@@ -134,10 +162,11 @@ View.prototype={
         var x = evt.offsetX;
         var y = evt.offsetY;
         var handled = false;
+        var r;
 
         if (this.activeTool)
         {
-            var r = this.activeTool.mousedown(x,y);
+            r = this.activeTool.mousedown(x,y);
             if (r == false)
                 this.activeTool = null;
             if (r == true || r == false)
@@ -148,7 +177,7 @@ View.prototype={
         for(var i = this.tools.length - 1; i >= 0; i --)
         {
             var tool = this.tools[i];
-            var r = tool.mousedown(x,y);
+            r = tool.mousedown(x,y);
             if (r == true)
                 this.activeTool = tool;
             if (r == true || r == false)
@@ -163,7 +192,7 @@ View.prototype={
             this.paint();
         }
 
-        evt.preventDefault();
+        //evt.preventDefault();
     },
 
     handleMouseUp: function(evt){
@@ -261,5 +290,29 @@ View.prototype={
         this.changeZoom(x,y,Math.pow(1.001,d));
         this.paint();
         evt.preventDefault();
+    },
+
+    handleKeyDown: function(evt){
+        log.debug("key pressed " + evt.keyCode);
+
+        if (evt.keyCode == 27)  //escape
+        {
+            if (this.activeTool){
+                this.activeTool.cancel();
+                this.activeTool = null;
+                this.paint();
+            }
+        }
+        else if (evt.keyCode == 68 || evt.keyCode == 46)  //delete
+        {
+            if (this.selection.length > 0)
+            {
+                if (this.activeTool)
+                    this.activeTool.cancel();
+                this.activeTool = null;
+                this.data.deleteItems(this.selection);
+                this.paint();
+            }
+        }
     }
 };

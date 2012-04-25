@@ -7,6 +7,7 @@
       <script type="text/javascript" src="pointstool.js"></script>
       <script type="text/javascript" src="linetool.js"></script>
       <script type="text/javascript" src="pantool.js"></script>
+      <script type="text/javascript" src="geometry.js"></script>
       <!--    <script type="text/javascript" src="render.js"></script> -->
       <script>
     log  = log4javascript.getLogger("main");
@@ -15,20 +16,18 @@
 
     window.onload = function() {
 
-      var canvas = document.getElementById("mapCanvas");
-      var data = new AreasData();
-      var view = new View(canvas, data);
+        var canvas = document.getElementById("mapCanvas");
+        var data = new AreasData();
+        var view = new View(canvas, data);
 
-      view.addTool(new PanTool());
-      view.addTool(new CreateLinesTool());
-      //view.addTool(new CreatePointsTool());
-      view.addTool(new DragPointsTool());
-      view.addTool(new SelectOnClickTool());
+        view.addTool(new PanTool());
+        view.addTool(new CreateLinesTool());
+        view.addTool(new AddNodeOnLineTool());
+        view.addTool(new DragPointsTool());
+        view.addTool(new SelectOnClickTool());
+            view.paint();
 
-        //view.addTool(new LinesTool());
-      view.paint();
-
-      log.info("Editor loaded");
+        log.info("Editor loaded");
     };
     </script>
   </head>
