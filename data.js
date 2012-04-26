@@ -5,6 +5,47 @@ AreasData.prototype = {
     segments:[],
     shapes:[],
 
+    undo_stack:[],
+    redo_stack:[],
+
+    current_action: null,
+
+    start_action:function(name){
+        if (this.current_action){
+            this.commit();
+        }
+
+        this.current_action = {name: name, actions: []};
+    },
+
+    commit:function(){
+        if (this.current_action){
+            this.redo_stack = [];
+            this.undo_stack.push(this.current_action);
+            this.current_action = null;
+        }
+    },
+
+    cancel: function(){
+        if (!this.current_action)
+            return;
+
+        var a = this.current_action;
+        this.current_action = {name: "Cancel", actions:[]};
+
+
+        this.current_action = null;
+    },
+
+    undo: function(){
+
+    },
+
+    redo: function(){
+
+    },
+
+
     newPoint: function(x,y){
         var p = {type: "point",x:x, y:y, segments: [], created: true};
         this.points.push(p);
@@ -46,8 +87,16 @@ AreasData.prototype = {
         if (i == -1)
             return;
 
+        var p0 = segment.p0;
+        var p1 = segment.p1;
+
         this.segments.splice(i,1);
         segment.disconnect();
+
+        if (p0.segments.length == 0)
+            this.removePoint(p0);
+        if (p1.segments.length == 0)
+            this.removePoint(p1);
     },
 
     deleteItems: function(itemList){

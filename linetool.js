@@ -209,6 +209,7 @@ CreateLinesTool.prototype = {
 
         if (this.line)
         {
+            this.startingPoint = null;
 
             if (p0)
             {
