@@ -163,6 +163,7 @@ CreateLinesTool.prototype = {
         this.data = view.data;
         this.newPoint = null;
         this.line = null;
+        this.startingPoint = null;
     },
 
 
@@ -208,8 +209,10 @@ CreateLinesTool.prototype = {
 
         if (this.line)
         {
+
             if (p0)
             {
+                this.startingPoint = null;
                 //finish segment
                 this.data.mergePoints(p0, this.newPoint);
                 this.view.setSelected(this.data.getLineSegments(this.line));
@@ -246,6 +249,7 @@ CreateLinesTool.prototype = {
             if (!p0)
             {
                 p0 = this.data.newPoint(x,y);
+                this.startingPoint = p0;
             }
 
             this.newPoint = this.data.newPoint(x,y);
@@ -257,10 +261,16 @@ CreateLinesTool.prototype = {
 
     cancel: function(){
         if (this.line){
+            if (this.startingPoint)
+            {
+                this.data.removePoint(this.startingPoint);
+            }
+
             this.data.removeSegment(this.line);
             this.data.removePoint(this.newPoint);
             this.line = null;
             this.newPoint = null;
+            this.startingPoint = null;
             this.view.setSelected([]);
         }
     }

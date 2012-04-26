@@ -20,9 +20,10 @@ AreasData.prototype = {
 
     removePoint: function(p){
         var i = this.points.indexOf(p);
-        if (i != -1){
-            this.points.splice(i,1);
-        }
+        if (i == -1)
+            return;
+
+        this.points.splice(i,1);
 
         while (p.segments.length > 0){
             this.removeSegment(p.segments[p.segments.length - 1]);
@@ -31,10 +32,10 @@ AreasData.prototype = {
 
     removeSegment: function(segment){
         var i = this.segments.indexOf(segment);
-        if (i != -1){
-            this.segments.splice(i,1);
-        }
+        if (i == -1)
+            return;
 
+        this.segments.splice(i,1);
         segment.disconnect();
     },
 

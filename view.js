@@ -127,7 +127,7 @@ View.prototype={
     },
 
     findSegment: function(canvasX, canvasY, ignoreThis){
-        var treshold = 5*this.zoom;
+        var treshold = 7/this.zoom;
         var x = this.xToData(canvasX);
         var y = this.yToData(canvasY);
 
