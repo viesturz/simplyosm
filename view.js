@@ -105,7 +105,7 @@ View.prototype={
     },
 
     findPoint: function(canvasX, canvasY, ignoreThis){
-        var treshold = 5*5;
+        var treshold = 7*7;
         if (ignoreThis)
           treshold *= 4;
 

@@ -3,47 +3,13 @@ AreasData = function(){};
 AreasData.prototype = {
     points:[],
     segments:[],
-    shapes:[],
+    areas:[],
 
     undo_stack:[],
     redo_stack:[],
 
     current_action: null,
 
-    start_action:function(name){
-        if (this.current_action){
-            this.commit();
-        }
-
-        this.current_action = {name: name, actions: []};
-    },
-
-    commit:function(){
-        if (this.current_action){
-            this.redo_stack = [];
-            this.undo_stack.push(this.current_action);
-            this.current_action = null;
-        }
-    },
-
-    cancel: function(){
-        if (!this.current_action)
-            return;
-
-        var a = this.current_action;
-        this.current_action = {name: "Cancel", actions:[]};
-
-
-        this.current_action = null;
-    },
-
-    undo: function(){
-
-    },
-
-    redo: function(){
-
-    },
 
 
     newPoint: function(x,y){
@@ -79,7 +45,9 @@ AreasData.prototype = {
             }
         }
 
-        this.points.splice(i,1);
+        i = this.points.indexOf(p);
+        if (i != -1)
+            this.points.splice(i,1);
     },
 
     removeSegment: function(segment){
@@ -90,7 +58,7 @@ AreasData.prototype = {
         var p0 = segment.p0;
         var p1 = segment.p1;
 
-        this.segments.splice(i,1);
+            this.segments.splice(i,1);
         segment.disconnect();
 
         if (p0.segments.length == 0)
@@ -282,5 +250,53 @@ LineSegment.prototype = {
         this.p0.segments.splice(pos, 1);
         pos = this.p1.segments.indexOf(this);
         this.p1.segments.splice(pos, 1);
+    },
+
+
+    ///
+    ///  Areas
+    ///
+
+
+
+
+    ///
+    /// Undo, redo - TODO:
+    ///
+
+
+    start_action:function(name){
+        if (this.current_action){
+            this.commit();
+        }
+
+        this.current_action = {name: name, actions: []};
+    },
+
+    commit:function(){
+        if (this.current_action){
+            this.redo_stack = [];
+            this.undo_stack.push(this.current_action);
+            this.current_action = null;
+        }
+    },
+
+    cancel: function(){
+        if (!this.current_action)
+            return;
+
+        var a = this.current_action;
+        this.current_action = {name: "Cancel", actions:[]};
+
+
+        this.current_action = null;
+    },
+
+    undo: function(){
+
+    },
+
+    redo: function(){
+
     }
 };
