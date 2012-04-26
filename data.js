@@ -23,11 +23,22 @@ AreasData.prototype = {
         if (i == -1)
             return;
 
-        this.points.splice(i,1);
-
-        while (p.segments.length > 0){
-            this.removeSegment(p.segments[p.segments.length - 1]);
+        if (p.segments.length == 2){
+            //merge neighbor segments
+            //TODO: check for compatibility.
+            var s1 = p.segments[0];
+            var s2 = p.segments[1];
+            s1.changeEnd(p, s2.otherEnd(p));
+            this.removeSegment(s2);
         }
+        else
+        {
+            while (p.segments.length > 0){
+                this.removeSegment(p.segments[p.segments.length - 1]);
+            }
+        }
+
+        this.points.splice(i,1);
     },
 
     removeSegment: function(segment){
