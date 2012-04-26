@@ -132,7 +132,8 @@ DragPointsTool.prototype= {
             else
             {
                 var l = this.view.findSegment(canvasX, canvasY, this.point);
-                this.data.splitSegment(l.segment, this.point);
+                if (l)
+                    this.data.splitSegment(l.segment, this.point);
             }
 
             this.view.setSelected([this.point]);
@@ -152,36 +153,6 @@ DragPointsTool.prototype= {
         }
     }
 
-};
-
-CreatePointsTool = function(){};
-CreatePointsTool.prototype = {
-    attach: function(view){
-        this.view = view;
-        this.data = view.data;
-    },
-
-
-    mousedown: function(canvasX,canvasY){},
-    mousemove: function(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){},
-
-    mouseup: function(canvasX,canvasY){
-        var p = this.view.findPoint(canvasX, canvasY, this.point);
-
-        if (!p)
-        {
-            var x = this.view.xToData(canvasX);
-            var y = this.view.yToData(canvasY);
-            p = this.data.newPoint(x,y);
-            this.view.setSelected([p]);
-            return false;
-        }
-
-        //event not processed
-        return null;
-    },
-
-    cancel: function(){}
 };
 
 
@@ -207,7 +178,7 @@ CreateLinesTool.prototype = {
         if (!this.line)
             return null;
 
-        var p = this.view.findPoint(canvasXPrev, canvasYPrev, this.newPoint);
+        var p = this.view.findPoint(canvasX, canvasY, this.newPoint);
         var x = this.view.xToData(canvasX);
         var y = this.view.yToData(canvasY);
 
@@ -216,6 +187,13 @@ CreateLinesTool.prototype = {
         var selection = [this.line, this.newPoint];
         if (p){
             selection.push(p);
+        }
+        else{
+            var s = this.view.findSegment(canvasX, canvasY, this.newPoint);
+            if (s)
+            {
+                selection.push(s.segment);
+            }
         }
 
         this.view.setSelected(selection);
@@ -241,12 +219,25 @@ CreateLinesTool.prototype = {
             }
             else
             {
-                //continue drawing next segment
-                var p0 = this.newPoint;
-                this.newPoint = this.data.newPoint(x,y);
-                this.line = this.data.newSegment(p0, this.newPoint);
-                this.view.setSelected([this.line, this.newPoint]);
-                return true;
+                var s0 = this.view.findSegment(canvasX, canvasY, this.newPoint);
+
+                if (s0)
+                {
+                    this.data.splitSegment(s0.segment, this.newPoint);
+                    this.view.setSelected(this.data.getLineSegments(this.line));
+                    this.line = null;
+                    this.newPoint = null;
+                    return false;
+                }
+                else
+                {
+                    //continue drawing next segment
+                    var p0 = this.newPoint;
+                    this.newPoint = this.data.newPoint(x,y);
+                    this.line = this.data.newSegment(p0, this.newPoint);
+                    this.view.setSelected([this.line, this.newPoint]);
+                    return true;
+                }
             }
         }
         else
