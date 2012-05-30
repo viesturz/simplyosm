@@ -94,4 +94,25 @@ class AreasLayer {
 
       return best;
   }
+
+  void updateActions()
+  {
+    List<IAction> actions = [];
+
+    //Crossings
+    for (int pos1 = 0; pos1 < this.data.segments.length; pos1 ++){
+      for (int pos2 = pos1+1; pos2 < this.data.segments.length; pos2 ++){
+        AreasSegment s1 = this.data.segments[pos1];
+        AreasSegment s2 = this.data.segments[pos2];
+
+        if (s1.sharesPointWith(s2)) continue;
+        Intersection i = Geometry.intersection(s1.p0.x,s1.p0.y, s1.p1.x,s1.p1.y, s2.p0.x,s2.p0.y, s2.p1.x,s2.p1.y);
+        if (i != null){
+          actions.add(new RemoveCrossingAction(i.x, i.y, this.data, s1, s2));
+        }
+      }
+    }
+
+    this.view.actions = actions;
+  }
 }

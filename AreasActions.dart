@@ -20,10 +20,13 @@ class RemoveCrossingAction implements IAction{
   void paint(View view){
     var g = view.context;
     this.cx = view.xToCanvas(this.x);
-    this.cy = view.xToCanvas(this.y);
+    this.cy = view.yToCanvas(this.y);
 
-    g.setFillColor(255, 120, 120, 100);
+    g.beginPath();
+    g.fillStyle = "#F88";
+    g.setAlpha(100);
     g.arc(this.cx,this.cy, RADIUS, 0,Math.PI * 2, false);
+    g.fill();
   }
 
   bool hit(View view, double canvasX, double canvasY)

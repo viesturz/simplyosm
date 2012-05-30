@@ -210,7 +210,6 @@ class AreasData implements IData {
   }
 
 
-
   ///
   /// Undo, redo - TODO:
   ///
@@ -292,6 +291,10 @@ class AreasSegment{
       this.p0.segments.removeRange(pos, 1);
       pos = this.p1.segments.indexOf(this);
       this.p1.segments.removeRange(pos, 1);
+  }
+
+  bool sharesPointWith(AreasSegment s1){
+    return this.p0 == s1.p0 || this.p0 == s1.p1 || this.p1 == s1.p0 || this.p1 == s1.p1;
   }
 }
 

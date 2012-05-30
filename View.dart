@@ -59,7 +59,6 @@ class View {
       this.context.clearRect(0,0,this.canvasWidth, this.canvasHeight);
       this.layer.paint();
 
-      if (this.activeTool == null)
       for (IAction action in this.actions){
         action.paint(this);
       }
