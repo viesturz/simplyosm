@@ -2,12 +2,14 @@
 
 #source('Geometry.dart');
 #source('Tool.dart');
+#source('IAction.dart');
 #source('IData.dart');
 #source('View.dart');
 
 #source('AreasData.dart');
 #source('AreasLayer.dart');
 #source('AreasTools.dart');
+#source('AreasActions.dart');
 
 #source('Editor.dart');
 

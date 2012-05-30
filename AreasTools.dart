@@ -16,8 +16,8 @@ class SelectOnClickTool extends Tool{
     return Tool.STATUS_SKIP;
   }
 
-  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){
-    if (dragging == 0)
+  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, evt){
+    if (evt.which == 0)
     {
         var p = this.layer.findPoint(canvasX, canvasY, null);
         if (p != null)
@@ -55,8 +55,8 @@ class AddNodeOnLineTool extends Tool{
     return Tool.STATUS_SKIP;
   }
 
-  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){
-    if (!dragging)
+  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, evt){
+    if (evt.which == 0)
     {
         Intersection segment = this.layer.findSegment(canvasX, canvasY, null);
         if (segment != null)
@@ -83,8 +83,10 @@ class DragPointsTool extends Tool{
     this.data = layer.data;
   }
 
-  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){
-    if (dragging == 0)
+  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, MouseEvent evt){
+    bool dragging = evt.which != 0;
+
+    if (!dragging)
         return Tool.STATUS_SKIP;
 
     if (!this.isDragging)
@@ -98,7 +100,7 @@ class DragPointsTool extends Tool{
         }
     }
 
-    if (this.isDragging && dragging != 0)
+    if (this.isDragging)
     {
         var x = this.view.xToData(canvasX);
         var y = this.view.yToData(canvasY);
@@ -174,7 +176,7 @@ class CreateLinesTool extends Tool{
     return Tool.STATUS_ACTIVE;
   }
 
-  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){
+  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, MouseEvent evt){
     if (this.line == null)
         return Tool.STATUS_SKIP;
 

@@ -6,6 +6,7 @@ class View {
   AreasLayer layer;
 
   List<Tool> tools;
+  List<IAction> actions;
   Tool activeTool;
 
   double canvasWidth;
@@ -25,6 +26,7 @@ class View {
       this.layer = null;
 
       this.tools = [];
+      this.actions = [];
       this.selection = [];
       this.zoom = 1.0;
       this.centerX = 0.0;
@@ -42,7 +44,6 @@ class View {
       this.addTool(new PanTool());
   }
 
-
   void addTool(Tool tool){
       this.tools.insertRange(0,1);
       this.tools[0] = tool;
@@ -57,6 +58,11 @@ class View {
   void paint(){
       this.context.clearRect(0,0,this.canvasWidth, this.canvasHeight);
       this.layer.paint();
+
+      if (this.activeTool == null)
+      for (IAction action in this.actions){
+        action.paint(this);
+      }
   }
 
   double xToCanvas(double x){
@@ -157,7 +163,7 @@ class View {
           }
       }
 
-      bool handled = this.handleToolEvent((tool) => tool.mouseMove(x,y, this.prevX, this.prevY, buttons));
+      bool handled = this.handleToolEvent((tool) => tool.mouseMove(x,y, this.prevX, this.prevY, evt));
 
       this.prevX = x;
       this.prevY = y;
@@ -207,8 +213,8 @@ class CancelTool extends Tool{
 
 class PanTool extends Tool{
   PanTool(){}
-  int mouseMove(double canvasX,double  canvasY, double canvasXPrev, double canvasYPrev, int dragging){
-      if (dragging != 0)
+  int mouseMove(double canvasX,double  canvasY, double canvasXPrev, double canvasYPrev, MouseEvent evt){
+      if (evt.which != 0)
       {
           var dx = canvasX - canvasXPrev;
           var dy = canvasY - canvasYPrev;
