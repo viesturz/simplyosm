@@ -1,8 +1,54 @@
-class SelectOnClickTool extends Tool{
-  AreasLayer layer;
+class AreasTool extends Tool{
 
-  SelectOnClickTool(AreasLayer layer){
+  AreasLayer layer;
+  AreasData data;
+
+  AreasTool(AreasLayer layer){
     this.layer = layer;
+    this.data = layer.data;
+   }
+
+  //Helper methods
+  
+  void moveAndSnap(activePoint, activeLine, double canvasX,double canvasY){
+
+    var x;
+    var y;
+    var selection = [];
+    if (activePoint != null) selection.add(activePoint);
+    if (activeLine != null) selection.add(activeLine);
+
+    AreasPoint p = layer.findPoint(canvasX, canvasY, activePoint);
+    Intersection s = layer.findSegment(canvasX, canvasY, activePoint);
+
+    if (p != null)
+    {
+        selection.add(p);
+        x = p.x;
+        y = p.y;
+    }
+    else if (s != null)
+    {
+        selection.add(s.item);
+        x = s.x;
+        y = s.y;
+    }
+    else
+    {
+      x = this.view.xToData(canvasX);
+      y = this.view.yToData(canvasY);
+    }
+
+    this.view.setSelected(selection);
+    this.data.movePoint(activePoint, x, y);
+  }
+}
+
+
+class SelectOnClickTool extends AreasTool{
+
+  SelectOnClickTool(AreasLayer layer): super(layer)
+  {
   }
 
   int mouseDown(double canvasX, double canvasY){
@@ -31,22 +77,15 @@ class SelectOnClickTool extends Tool{
   }
 }
 
-class AddNodeOnLineTool extends Tool{
-  AreasLayer layer;
-  AreasData data;
-
-  AddNodeOnLineTool(AreasLayer layer){
-    this.layer = layer;
-    this.data = layer.data;
+class AddNodeOnLineTool extends AreasTool{
+  AddNodeOnLineTool(AreasLayer layer):super(layer){
   }
 
   int mouseDown(canvasX,canvasY){
     Intersection segment = this.layer.findSegment(canvasX, canvasY, null);
 
     if (segment != null){
-        var x = this.view.xToData(canvasX);
-        var y = this.view.yToData(canvasY);
-        var point = this.data.newPoint(x,y);
+        var point = this.data.newPoint(segment.x,segment.y);
         this.data.splitSegment(segment.item, point);
         this.view.setSelected([point]);
         this.layer.update();
@@ -71,17 +110,13 @@ class AddNodeOnLineTool extends Tool{
   }
 }
 
-class DragPointsTool extends Tool{
+class DragPointsTool extends AreasTool{
   bool isDragging = false;
-  AreasLayer layer;
-  AreasData data;
   AreasPoint point = null;
   double oldX = 0.0;
   double oldY = 0.0;
 
-  DragPointsTool(AreasLayer layer){
-    this.layer = layer;
-    this.data = layer.data;
+  DragPointsTool(AreasLayer layer):super(layer){
   }
 
   int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, MouseEvent evt){
@@ -103,17 +138,7 @@ class DragPointsTool extends Tool{
 
     if (this.isDragging)
     {
-        var x = this.view.xToData(canvasX);
-        var y = this.view.yToData(canvasY);
-        this.data.movePoint(this.point, x, y);
-        AreasPoint p = this.layer.findPoint(canvasX, canvasY, this.point);
-        Intersection l = this.layer.findSegment(canvasX, canvasY, this.point);
-        if (p != null)
-            this.view.setSelected([this.point, p]);
-        else if (l != null)
-            this.view.setSelected([this.point, l.item]);
-        else
-            this.view.setSelected([this.point]);
+        this.moveAndSnap(this.point, null, canvasX, canvasY);
         return Tool.STATUS_ACTIVE;
     }
 
@@ -158,16 +183,12 @@ class DragPointsTool extends Tool{
 }
 
 
-class CreateLinesTool extends Tool{
-  AreasLayer layer;
-  AreasData data;
+class CreateLinesTool extends AreasTool{
   AreasPoint newPoint = null;
   AreasSegment line = null;
   AreasPoint startingPoint = null;
 
-  CreateLinesTool(AreasLayer layer){
-    this.layer = layer;
-    this.data = layer.data;
+  CreateLinesTool(AreasLayer layer):super(layer){
   }
 
   int mousedown(canvasX,canvasY){
@@ -182,26 +203,7 @@ class CreateLinesTool extends Tool{
     if (this.line == null)
         return Tool.STATUS_SKIP;
 
-    AreasPoint p = this.layer.findPoint(canvasX, canvasY, this.newPoint);
-    var x = this.view.xToData(canvasX);
-    var y = this.view.yToData(canvasY);
-
-    this.data.movePoint(this.newPoint, x, y);
-
-    var selection = [this.line, this.newPoint];
-    if (p != null){
-        selection.add(p);
-    }
-    else
-    {
-      Intersection s = this.layer.findSegment(canvasX, canvasY, this.newPoint);
-      if (s != null)
-      {
-          selection.add(s.item);
-      }
-    }
-
-    this.view.setSelected(selection);
+    this.moveAndSnap(this.newPoint, this.line, canvasX, canvasY);
     return Tool.STATUS_ACTIVE;
   }
 

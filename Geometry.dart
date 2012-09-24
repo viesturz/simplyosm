@@ -13,10 +13,10 @@ class Intersection{
 
 class Geometry {
 
-  static Intersection distanceToSegment(double x1, double y1, double x2, double y2, double x0,double y0) {
+  static Intersection distanceToSegment(double x1, double y1, double x2, double y2, double px,double py) {
     double dx = x2 - x1;
     double dy = y2 - y1;
-    double along = ((dx * (x0 - x1)) + (dy * (y0 - y1))) / (dx*dx + dy*dy);
+    double along = ((dx * (px - x1)) + (dy * (py - y1))) / (dx*dx + dy*dy);
     double x, y;
     if(along <= 0.0) {
         x = x1;
@@ -28,12 +28,13 @@ class Geometry {
         x = x1 + along * dx;
         y = y1 + along * dy;
     }
-    double dist = sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
+    double dist = sqrt((x - px) * (x - px) + (y - py) * (y - py));
 
     return new Intersection(x,y,dist);
   }
 
-
+  
+  
   static Intersection intersection(double s1x1, double s1y1, double s1x2, double s1y2, double s2x1,double s2y1, double s2x2,double s2y2) {
     var x11_21 = s1x1 - s2x1;
     var y11_21 = s1y1 - s2y1;

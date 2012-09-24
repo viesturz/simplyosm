@@ -14,5 +14,6 @@ class Tool {
   int mouseUp(double canvasX, double canvasY){return STATUS_SKIP;}
   int mouseMove(double canvasX,double  canvasY, double canvasXPrev, double canvasYPrev, MouseEvent evt){return STATUS_SKIP;}
   void cancel(){}
+  
 }
 
