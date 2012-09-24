@@ -49,7 +49,7 @@ class AddNodeOnLineTool extends Tool{
         var point = this.data.newPoint(x,y);
         this.data.splitSegment(segment.item, point);
         this.view.setSelected([point]);
-        this.layer.updateActions();
+        this.layer.update();
         return Tool.STATUS_FINISHED;
     }
 
@@ -140,7 +140,7 @@ class DragPointsTool extends Tool{
 
           this.view.setSelected([this.point]);
           this.isDragging = false;
-          this.layer.updateActions();
+          this.layer.update();
           return Tool.STATUS_FINISHED;
       }
 
@@ -222,7 +222,7 @@ class CreateLinesTool extends Tool{
             this.view.setSelected(this.data.getLineSegments(this.line));
             this.line = null;
             this.newPoint = null;
-            this.layer.updateActions();
+            this.layer.update();
             return Tool.STATUS_FINISHED;
         }
         else
@@ -235,7 +235,7 @@ class CreateLinesTool extends Tool{
                 this.view.setSelected(this.data.getLineSegments(this.line));
                 this.line = null;
                 this.newPoint = null;
-                this.layer.updateActions();
+                this.layer.update();
                 return Tool.STATUS_FINISHED;
             }
             else
@@ -245,7 +245,7 @@ class CreateLinesTool extends Tool{
                 this.newPoint = this.data.newPoint(x,y);
                 this.line = this.data.newSegment(pp, this.newPoint);
                 this.view.setSelected([this.line, this.newPoint]);
-                this.layer.updateActions();
+                this.layer.update();
                 return Tool.STATUS_ACTIVE;
             }
         }

@@ -1,11 +1,15 @@
 class AreasLayer {
   AreasData data;
   View view;
+  List<IAction> actions;
+  ActionsTool actionsTool;
 
   AreasLayer(AreasData data)
   {
     this.data = data;
     this.view = null;
+    this.actions = [];
+    this.actionsTool = new ActionsTool(this);
   }
 
   void attach(View _view){
@@ -33,13 +37,17 @@ class AreasLayer {
         double x = view.xToCanvas(p.x);
         double y = view.yToCanvas(p.y);
         context.beginPath();
-        context.arc(x,y,5, 0, 2*Math.PI, false);
+        context.arc(x,y,5, 0, 2*PI, false);
 
         if (selection.indexOf(p) != -1)
             context.fillStyle='#F33';
         else
             context.fillStyle='#666666';
         context.fill();
+    }
+    
+    for (IAction action in this.actions){
+      action.paint(this.view);
     }
   }
 
@@ -95,9 +103,9 @@ class AreasLayer {
       return best;
   }
 
-  void updateActions()
+  void update()
   {
-    List<IAction> actions = [];
+    this.actions = [];
 
     //Crossings
     for (int pos1 = 0; pos1 < this.data.segments.length; pos1 ++){
@@ -108,11 +116,9 @@ class AreasLayer {
         if (s1.sharesPointWith(s2)) continue;
         Intersection i = Geometry.intersection(s1.p0.x,s1.p0.y, s1.p1.x,s1.p1.y, s2.p0.x,s2.p0.y, s2.p1.x,s2.p1.y);
         if (i != null){
-          actions.add(new RemoveCrossingAction(i.x, i.y, this.data, s1, s2));
+          this.actions.add(new RemoveCrossingAction(i.x, i.y, this, s1, s2));
         }
       }
     }
-
-    this.view.actions = actions;
   }
 }

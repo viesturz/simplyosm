@@ -1,4 +1,5 @@
 #import('dart:html');
+#import('dart:math');
 
 #source('Geometry.dart');
 #source('Tool.dart');

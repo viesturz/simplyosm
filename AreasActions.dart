@@ -1,18 +1,18 @@
 class RemoveCrossingAction implements IAction{
-  static final int RADIUS = 10;
+  static final double RADIUS = 10.0;
 
   double x;
   double y;
   double cx;
   double cy;
-  AreasData data;
+  AreasLayer layer;
   AreasSegment segment1;
   AreasSegment segment2;
 
-  RemoveCrossingAction(double x, double y, AreasData data, AreasSegment segment1, AreasSegment segment2){
+  RemoveCrossingAction(double x, double y, AreasLayer layer, AreasSegment segment1, AreasSegment segment2){
     this.x = x;
     this.y = y;
-    this.data = data;
+    this.layer = layer;
     this.segment1 = segment1;
     this.segment2 = segment2;
   }
@@ -23,10 +23,20 @@ class RemoveCrossingAction implements IAction{
     this.cy = view.yToCanvas(this.y);
 
     g.beginPath();
-    g.fillStyle = "#F88";
-    g.setAlpha(100);
-    g.arc(this.cx,this.cy, RADIUS, 0,Math.PI * 2, false);
+    g.fillStyle = "#FFF";
+    g.strokeStyle = "#BBB";
+    g.arc(this.cx,this.cy, RADIUS, 0,PI * 2, false);
     g.fill();
+    g.stroke();
+    
+    var o = RADIUS / 2 - 1;
+    g.beginPath();
+    g.strokeStyle = "#F33";
+    g.moveTo(this.cx - o, this.cy - o);
+    g.lineTo(this.cx + o, this.cy + o);
+    g.moveTo(this.cx - o, this.cy + o);
+    g.lineTo(this.cx + o, this.cy - o);
+    g.stroke();
   }
 
   bool hit(View view, double canvasX, double canvasY)
@@ -34,20 +44,15 @@ class RemoveCrossingAction implements IAction{
     return Geometry.distanceSquared(this.cx, this.cy, canvasX, canvasY) < RADIUS*RADIUS;
   }
 
-  int mouseMove(View view, double canvasX, double canvasY){
-    if (this.hit(view, canvasX, canvasY))
-      return IAction.STATUS_ACTIVE;
-    return IAction.STATUS_SKIP;
+  void mouseMove(View view, double canvasX, double canvasY){
+    this.layer.view.setSelected([]);
   }
 
-  int click(View view, double canvasX, double canvasY){
-    if (!this.hit(view, canvasX, canvasY))
-      return IAction.STATUS_SKIP;
-
+  void click(View view, double canvasX, double canvasY){
     //perform the merging
-    AreasPoint p = this.data.newPoint(this.x, this.y);
-    this.data.splitSegment(this.segment1, p);
-    this.data.splitSegment(this.segment2, p);
-    return IAction.STATUS_FINISHED;
+    AreasPoint p = this.layer.data.newPoint(this.x, this.y);
+    this.layer.data.splitSegment(this.segment1, p);
+    this.layer.data.splitSegment(this.segment2, p);
+    this.layer.update();
   }
 }

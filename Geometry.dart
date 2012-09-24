@@ -4,7 +4,7 @@ class Intersection{
   double distance;
   Object item;
 
-  Intersection(x, y, distance){
+  Intersection(double x,double  y, double distance){
     this.x = x;
     this.y = y;
     this.distance = distance;
@@ -28,7 +28,7 @@ class Geometry {
         x = x1 + along * dx;
         y = y1 + along * dy;
     }
-    double dist = Math.sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
+    double dist = sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
 
     return new Intersection(x,y,dist);
   }
@@ -58,7 +58,7 @@ class Geometry {
         // calculate the intersection point
         var x = s1x1 + (along1 * x12_11);
         var y = s1y1 + (along1 * y12_11);
-        return new Intersection(x,y,0);
+        return new Intersection(x,y,0.0);
       }
     }
 

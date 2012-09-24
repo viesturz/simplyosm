@@ -2,7 +2,7 @@ class AreasData implements IData {
   List<AreasPoint> points;
   List<AreasSegment> segments;
   List<AreasArea> areas;
-
+  
   List<Object> undo_stack;
   List<Object> redo_stack;
   Object current_action;
@@ -25,9 +25,12 @@ class AreasData implements IData {
   }
 
   AreasSegment newSegment(AreasPoint p0, AreasPoint p1){
-    AreasSegment l = new AreasSegment(p0, p1);
-    this.segments.add(l);
-    return l;
+    AreasSegment s = new AreasSegment(p0, p1);
+    this.segments.add(s);
+    
+    
+    
+    return s;
   }
 
   void removePoint(AreasPoint p){
@@ -114,7 +117,6 @@ class AreasData implements IData {
         neighborPoints.add(p0.segments[i].otherEnd(p0));
         neighborSegments.add(p0.segments[i]);
     }
-
 
     //merge remaining segments
     while (p1.segments.length > 0){
@@ -248,11 +250,15 @@ class AreasPoint{
 class AreasSegment{
   AreasPoint p0;
   AreasPoint p1;
+  AreasArea left;
+  AreasArea right; 
 
   AreasSegment(AreasPoint p0, AreasPoint p1){
     assert(p0 != p1);
     this.p0 = p0;
     this.p1 = p1;
+    this.left = null;
+    this.right = null;
     this.p0.segments.add(this);
     this.p1.segments.add(this);
   }

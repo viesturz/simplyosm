@@ -6,7 +6,6 @@ class View {
   AreasLayer layer;
 
   List<Tool> tools;
-  List<IAction> actions;
   Tool activeTool;
 
   double canvasWidth;
@@ -26,7 +25,6 @@ class View {
       this.layer = null;
 
       this.tools = [];
-      this.actions = [];
       this.selection = [];
       this.zoom = 1.0;
       this.centerX = 0.0;
@@ -58,10 +56,6 @@ class View {
   void paint(){
       this.context.clearRect(0,0,this.canvasWidth, this.canvasHeight);
       this.layer.paint();
-
-      for (IAction action in this.actions){
-        action.paint(this);
-      }
   }
 
   double xToCanvas(double x){
@@ -133,23 +127,23 @@ class View {
   }
 
   void handleMouseDown(evt){
-      double x = evt.offsetX;
-      double y = evt.offsetY;
+      double x = evt.offsetX.toDouble();
+      double y = evt.offsetY.toDouble();
 
       bool handled = handleToolEvent((tool) => tool.mouseDown(x, y));
       evt.preventDefault();
   }
 
   void handleMouseUp(evt){
-      double x = evt.offsetX;
-      double y = evt.offsetY;
+      double x = evt.offsetX.toDouble();
+      double y = evt.offsetY.toDouble();
       bool handled = this.handleToolEvent((tool) => tool.mouseUp(x, y));
       evt.preventDefault();
   }
 
   void handleMouseMove(evt){
-      double x = evt.offsetX;
-      double y = evt.offsetY;
+      double x = evt.offsetX.toDouble();
+      double y = evt.offsetY.toDouble();
       int buttons = evt.which;
 
       //drag delay - do not react on tiny drags.
@@ -171,11 +165,11 @@ class View {
 
 
   void handleMouseWheel(evt){
-      double x = evt.offsetX;
-      double y = evt.offsetY;
-      double d = evt.wheelDeltaY;
+      double x = evt.offsetX.toDouble();
+      double y = evt.offsetY.toDouble();
+      double d = evt.wheelDeltaY.toDouble();
 
-      this.changeZoom(x,y,Math.pow(1.001,d));
+      this.changeZoom(x,y, pow(1.001,d));
       this.paint();
       evt.preventDefault();
   }
