@@ -46,6 +46,22 @@ class AreasLayer {
         context.fill();
     }
     
+    for (AreasArea a in this.data.areas)
+    {
+      context.beginPath();
+      AreasPoint p = a.start;
+      context.moveTo(view.xToCanvas(p.x), view.yToCanvas(p.y));
+      
+      for (AreasSegment seg in a.segments)
+      {
+         p = seg.otherEnd(p);
+         context.lineTo(view.xToCanvas(p.x), view.yToCanvas(p.y));
+      }
+      
+      context.fillStyle='#CFC';
+      context.fill();
+    }
+    
     for (IAction action in this.actions){
       action.paint(this.view);
     }

@@ -20,7 +20,8 @@ class simplyjosm {
   simplyjosm() {
   }
 
-  void run() {
+  void run() {  
+    
     var e = new Editor(document.query('#mapCanvas'));
     write("Editor started!");
   }

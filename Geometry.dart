@@ -69,4 +69,19 @@ class Geometry {
   static double distanceSquared(double x, double y, double x1, double y1){
     return (x - x1) * (x-x1) + (y-y1)* (y-y1);
   }
+  
+  static bool isToTheLeft(double px, double py, double rightx, double righty, double leftx, double lefty)
+  {
+    var dx0 = rightx - px;
+    var dy0 = righty - py;
+    var dx1 = leftx - px;
+    var dy1 = lefty - py;
+    
+    return (dx0 * dy1 > dx1 * dy0);
+  }
+  
+  static double angleBetweenVectors(double x0, double y0, double x1, double y1)
+  {
+    return atan2(x1, y1) - atan2(x0, y0);
+  }
 }

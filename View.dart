@@ -63,7 +63,7 @@ class View {
   }
 
   double yToCanvas(double y){
-      return (y - this.centerY) * this.zoom + this.canvasHeight/2;
+      return this.canvasHeight/2 - (y - this.centerY) * this.zoom;
   }
 
   double xToData(double x){
@@ -71,7 +71,7 @@ class View {
   }
 
   double yToData(double y){
-      return (y - this.canvasHeight/2) / this.zoom + this.centerY;
+      return (this.canvasHeight/2 - y) / this.zoom + this.centerY;
   }
 
   void changeZoom(double canvasX, double canvasY, double scale){
@@ -90,7 +90,7 @@ class View {
 
   void pan(double canvasDx,double canvasDy){
       this.centerX -= canvasDx / this.zoom;
-      this.centerY -= canvasDy / this.zoom;
+      this.centerY += canvasDy / this.zoom;
   }
 
   bool handleToolEvent(Function eventFunc){
