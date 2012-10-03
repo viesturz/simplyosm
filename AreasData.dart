@@ -770,9 +770,16 @@ class AreasChange{
 
   void deletedPoint(AreasPoint p)
   {
-    if (this.deletedPoints.indexOf(p) != -1)
+    if (this.deletedPoints.indexOf(p) == -1)
     {
-      this.deletedPoints.add(p);
+      if (this.newPoints.indexOf(p) != -1)
+      {
+        this.newPoints.removeRange(this.newPoints.indexOf(p), 1);
+      }
+      else
+      {
+        this.deletedPoints.add(p);
+      }
     }
 
     this.modifiedPoint(p);
@@ -781,9 +788,16 @@ class AreasChange{
   
   void deletedSegment(AreasSegment s)
   {
-    if (this.deletedSegments.indexOf(s) != -1)
+    if (this.deletedSegments.indexOf(s) == -1)
     {
-      this.deletedSegments.add(s);
+      if (this.newSegments.indexOf(s) != -1)
+      {
+        this.newSegments.removeRange(this.newSegments.indexOf(s), 1);
+      }
+      else
+      {
+        this.deletedSegments.add(s);
+      }
     }
 
     this.modifiedSegment(s);
@@ -793,9 +807,16 @@ class AreasChange{
 
   void deletedArea(AreasArea a)
   {
-    if (this.deletedAreas.indexOf(a) != -1)
+    if (this.deletedAreas.indexOf(a) == -1)
     {
-      this.deletedAreas.add(a);
+      if (this.newAreas.indexOf(a) != -1)
+      {
+        this.newAreas.removeRange(this.newAreas.indexOf(a), 1);
+      }
+      else
+      {
+        this.deletedAreas.add(a);
+      }
     }
     
     this.modifiedArea(a);

@@ -87,6 +87,7 @@ class AddNodeOnLineTool extends AreasTool{
     if (segment != null){
         var point = this.data.newPoint(segment.x,segment.y);
         this.data.splitSegment(segment.item, point);
+        this.data.commitChanges();
         this.view.setSelected([point]);
         this.layer.update();
         return Tool.STATUS_FINISHED;
@@ -165,6 +166,7 @@ class DragPointsTool extends AreasTool{
 
           this.view.setSelected([this.point]);
           this.isDragging = false;
+          this.data.commitChanges();
           this.layer.update();
           return Tool.STATUS_FINISHED;
       }
@@ -224,6 +226,7 @@ class CreateLinesTool extends AreasTool{
             this.view.setSelected(this.data.getLineSegments(this.line));
             this.line = null;
             this.newPoint = null;
+            this.data.commitChanges();
             this.layer.update();
             return Tool.STATUS_FINISHED;
         }
@@ -237,6 +240,7 @@ class CreateLinesTool extends AreasTool{
                 this.view.setSelected(this.data.getLineSegments(this.line));
                 this.line = null;
                 this.newPoint = null;
+                this.data.commitChanges();
                 this.layer.update();
                 return Tool.STATUS_FINISHED;
             }
@@ -247,6 +251,7 @@ class CreateLinesTool extends AreasTool{
                 this.newPoint = this.data.newPoint(x,y);
                 this.line = this.data.newSegment(pp, this.newPoint);
                 this.view.setSelected([this.line, this.newPoint]);
+                this.data.commitChanges();
                 this.layer.update();
                 return Tool.STATUS_ACTIVE;
             }

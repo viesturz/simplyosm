@@ -23,6 +23,9 @@ class simplyjosm {
   void run() {  
     
     var e = new Editor(document.query('#mapCanvas'));
+    document.query('#undo').on.click.add((event) => e.undo());
+    document.query('#redo').on.click.add((event) => e.redo());
+    
     write("Editor started!");
   }
 

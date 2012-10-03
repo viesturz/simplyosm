@@ -57,6 +57,30 @@ class View {
       this.context.clearRect(0,0,this.canvasWidth, this.canvasHeight);
       this.layer.paint();
   }
+  
+  void undo()
+  {
+    if (this.activeTool != null)
+    {
+      this.activeTool.cancel();
+      this.activeTool = null;
+    }
+    
+    this.data.undo();
+    this.paint();
+  }
+  
+  void redo()
+  {
+    if (this.activeTool != null)
+    {
+      this.activeTool.cancel();
+      this.activeTool = null;
+    }
+    
+    this.data.redo();
+    this.paint();
+  }
 
   double xToCanvas(double x){
       return (x - this.centerX) * this.zoom + this.canvasWidth/2;
