@@ -22,14 +22,8 @@ class AreasData implements IData {
   
 
   ///
-  /// Undo, redo - TODO:
+  /// Undo, redo
   ///
-
-  void undo(){
-  }
-
-  void redo(){
-  }
 
   void toOsm(){
   }
@@ -37,18 +31,117 @@ class AreasData implements IData {
   void fromOsm(){
   }
 
+  void undo(){
+    this.cancelChanges();
+    
+    if (this.undo_stack.length > 0)
+    {
+      var undo = this.undo_stack.removeLast();
+      var redo = this._revertChanges(undo);
+      this.redo_stack.add(redo);
+    }
+    
+    //TODO: update crossings.
+  }
+
+  void redo(){
+    this.cancelChanges();
+    
+    if (this.redo_stack.length > 0)
+    {
+      var redo = this.redo_stack.removeLast();
+      var undo = this._revertChanges(redo);
+      this.undo_stack.add(undo);
+    }
+    
+    //TODO: update crossings.
+  }
   
   void commitChanges(){
     //Update areas
     //TODO:
     
-    //update crossings
-    //TODO:
-    
+    //commit
+    this.redo_stack.clear();
     this.undo_stack.add(this.current_action);
     this.current_action = new AreasChange();
+
+    //update crossings
+    //TODO:
+  }
+  
+  void cancelChanges()
+  {
+    this._revertChanges(this.current_action);
+    this.current_action = new AreasChange();
+
+    //update crossings
+    //TODO:
   }
 
+  AreasChange _revertChanges(AreasChange change)
+  {
+    AreasChange redo = new AreasChange();
+       
+    //points first
+    for(AreasPoint p in change.changedPoints.getKeys())
+    {
+      redo.modifiedPoint(p);
+      change.restorePoint(p);
+    }
+    
+    for(AreasPoint p in change.deletedPoints)
+    {
+      this.points.add(p);
+      redo.newPoints.add(p);
+    }
+    
+    for(AreasPoint p in change.newPoints)
+    {
+      redo.deletedPoint(p);
+      this.points.removeRange(this.points.indexOf(p), 1);
+    }
+    
+    //then lines
+    for(AreasSegment l in change.changedSegments.getKeys())
+    {
+      redo.modifiedSegment(l);
+      change.restoreSegment(l);
+    }
+    
+    for(AreasSegment l in change.deletedSegments)
+    {
+      this.segments.add(l);
+      redo.newSegments.add(l);
+    }
+    
+    for(AreasSegment l in change.newSegments)
+    {
+      redo.deletedSegment(l);
+      this.segments.removeRange(this.segments.indexOf(l), 1);
+    }
+    
+    //areas last
+    for(AreasArea l in change.changedAreas.getKeys())
+    {
+      redo.modifiedArea(l);
+      change.restoreArea(l);
+    }
+    
+    for(AreasArea l in change.deletedAreas)
+    {
+      this.areas.add(l);
+      redo.newAreas.add(l);
+    }
+    
+    for(AreasArea l in change.newAreas)
+    {
+      redo.deletedArea(l);
+      this.areas.removeRange(this.areas.indexOf(l), 1);
+    }
+    
+    return redo;
+  }
   
   AreasPoint newPoint(double x, double y){
     var p = new AreasPoint(this.nextId ++, x, y);
@@ -481,13 +574,13 @@ class AreasSegment implements Hashable{
     this.id = id;
     this.p0 = p0;
     this.p1 = p1;
+    this.areas = [];
   }
   
   int hashCode()
   {
     return this.id;
   }
- 
 
   AreasPoint otherEnd(AreasPoint p){
       if (p == this.p0)
@@ -626,6 +719,16 @@ class AreasChange{
    
     this.changedPoints[p] = copy;
   }
+
+  void restorePoint(AreasPoint p)
+  {
+    assert(this.changedPoints.containsKey(p));
+    AreasPoint copy = this.changedPoints[p];
+    p.x = copy.x;
+    p.y = copy.y;
+    p.segments = new List.from(copy.segments);
+  }
+
   
   void modifiedSegment(AreasSegment s)
   {
@@ -637,7 +740,17 @@ class AreasChange{
    
     this.changedSegments[s] = copy;
   }
-  
+
+  void restoreSegment(AreasSegment s)
+  {
+    assert(this.changedSegments.containsKey(s));
+    
+    AreasSegment copy = this.changedSegments[s];
+    s.p0 = copy.p0;
+    s.p1 = copy.p1;
+    s.areas = new List.from(copy.areas);
+  }
+
   void modifiedArea(AreasArea a)
   {
     if (this.changedAreas.containsKey(a))
@@ -646,7 +759,15 @@ class AreasChange{
     AreasArea copy = new AreasArea(a.id, a.start,new List.from(a.segments));  
     this.changedAreas[a] = copy;
   }
- 
+
+  void restoreArea(AreasArea a)
+  {
+    assert(this.changedAreas.containsKey(a));
+    AreasArea copy = this.changedAreas[a];
+    a.start = copy.start;
+    a.segments = new List.from(copy.segments);  
+  }
+
   void deletedPoint(AreasPoint p)
   {
     if (this.deletedPoints.indexOf(p) != -1)
@@ -668,6 +789,21 @@ class AreasChange{
     this.modifiedSegment(s);
     this.modifiedPoint(s.p0);
     this.modifiedPoint(s.p1);
+  }
+
+  void deletedArea(AreasArea a)
+  {
+    if (this.deletedAreas.indexOf(a) != -1)
+    {
+      this.deletedAreas.add(a);
+    }
+    
+    this.modifiedArea(a);
+    
+    for (var seg in a.segments)
+    {
+      this.modifiedSegment(seg);
+    }
   }
 
 }
