@@ -37,6 +37,8 @@ class AreasLayer {
       context.fillStyle='#CFC';
       context.fill();
     }
+    
+    var s0 = null;
 
     for (AreasSegment s in this.data.segments){
         context.beginPath();
@@ -58,7 +60,16 @@ class AreasLayer {
         {
           context.fillStyle="#000";
           context.fillText("${s.id}", (x0+x1)/2, (y0+y1)/2-20);
+          
+          /*
+          if (s0 != null && s0.p1 == s.p0){
+            var angle = Geometry.angleBetweenVectors(s.p0.x - s0.p0.x, s.p0.y - s0.p0.y, s.p1.x - s.p0.x, s.p1.y-s.p0.y);
+            
+            context.fillText("${angle}", x0 + 20, y0);
+          }*/
         }
+        
+        s0 = s;
     }
     
     for (AreasPoint p in this.data.points){

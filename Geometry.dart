@@ -82,6 +82,11 @@ class Geometry {
   
   static double angleBetweenVectors(double x0, double y0, double x1, double y1)
   {
-    return atan2(x1, y1) - atan2(x0, y0);
+    var r=atan2(x1, y1) - atan2(x0, y0);
+
+    if (r > PI) r-= PI*2;
+    if (r < -PI) r += PI*2;
+    
+    return r;
   }
 }

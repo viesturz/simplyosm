@@ -248,13 +248,15 @@ class CreateLinesTool extends AreasTool{
             }
             else
             {
+                //commit changes
+                this.data.commitChanges();
+                this.layer.update();
+  
                 //continue drawing next segment
                 var pp = this.newPoint;
                 this.newPoint = this.data.newPoint(x,y);
                 this.line = this.data.newSegment(pp, this.newPoint);
                 this.view.setSelected([this.line, this.newPoint]);
-                this.data.commitChanges();
-                this.layer.update();
                 return Tool.STATUS_ACTIVE;
             }
         }
