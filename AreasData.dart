@@ -42,6 +42,8 @@ class AreasData implements IData {
     }
     
     //TODO: update crossings.
+    
+    this.check();
   }
 
   void redo(){
@@ -55,6 +57,8 @@ class AreasData implements IData {
     }
     
     //TODO: update crossings.
+    
+    this.check();
   }
   
   void commitChanges(){
@@ -68,6 +72,8 @@ class AreasData implements IData {
 
     //update crossings
     //TODO:
+    
+    this.check();
   }
   
   void cancelChanges()
@@ -77,6 +83,8 @@ class AreasData implements IData {
 
     //update crossings
     //TODO:
+    
+    this.check();
   }
 
   AreasChange _revertChanges(AreasChange change)
@@ -142,6 +150,53 @@ class AreasData implements IData {
     
     return redo;
   }
+
+  void check()
+  {
+    for(AreasPoint p in this.points)
+    {
+      var i0 = this.points.indexOf(p);
+      assert(this.points.indexOf(p, i0 + 1) == -1);
+      
+      for( var seg in p.segments)
+      {
+        assert(this.segments.indexOf(seg) != -1);
+        
+        assert(seg.p0 == p || seg.p1 == p);
+      }
+    }
+    
+    for(AreasSegment s in this.segments)
+    {
+      var i0 = this.segments.indexOf(s);
+      assert(this.segments.indexOf(s, i0 + 1) == -1);
+      
+      assert(this.points.indexOf(s.p0) != -1);
+      assert(this.points.indexOf(s.p1) != -1);
+      
+      for(var area in s.areas)
+      {
+        assert(this.areas.indexOf(area) != -1);  
+        assert(area.segments.indexOf(s) != -1);
+      }
+    }
+    
+    for(AreasArea a in this.areas)
+    {
+      var i0 = this.areas.indexOf(a);
+      assert(this.areas.indexOf(a, i0) == -1);
+      
+      assert(this.points.indexOf(a.start) != -1);
+      assert(a.segments.length > 0);
+      assert(a.segments[0].p0 == a.start || a.segments[0].p1 == a.start);
+      
+      for(var seg in a.segments)
+      {
+        assert(this.segments.indexOf(seg) != -1);
+      }
+    }
+    
+  }
   
   AreasPoint newPoint(double x, double y){
     var p = new AreasPoint(this.nextId ++, x, y);
@@ -205,6 +260,9 @@ class AreasData implements IData {
 
     var p0 = segment.p0;
     var p1 = segment.p1;
+    
+    this.current_action.modifiedPoint(p0);
+    this.current_action.modifiedPoint(p1);
 
     this.segments.removeRange(i,1);
     segment.disconnect();
@@ -240,6 +298,9 @@ class AreasData implements IData {
 
   AreasPoint mergePoints(AreasPoint p0, AreasPoint p1){
     assert(p0 != p1);
+    
+    this.current_action.modifiedPoint(p0);
+    this.current_action.modifiedPoint(p1);
 
     //remove direct segments
     for (var i = 0; i < p1.segments.length; i ++){
@@ -274,7 +335,7 @@ class AreasData implements IData {
         if (segI != -1)
         {
             //Segment exists from both p0 and p1 to the same point, merge them.
-            this._mergeSegments(neighborSegments[segI], s);
+            this._mergeParralelSegments(neighborSegments[segI], s);
         }
         else
         {   //keep the segment, add to neighbors
@@ -419,9 +480,12 @@ class AreasData implements IData {
   /// Private stuff
   ///
   
-  void _mergeSegments(AreasSegment s1, AreasSegment s2){
+  void _mergeParralelSegments(AreasSegment s1, AreasSegment s2){
     assert(s1.otherEnd(s1.p0) == s2.otherEnd(s1.p0));
    
+    this.current_action.modifiedSegment(s1);
+    this.current_action.modifiedSegment(s2);
+    
     //merge areas
     while (s2.areas.length > 0)
     {
