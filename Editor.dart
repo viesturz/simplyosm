@@ -10,11 +10,11 @@ class Editor {
     this.view = new View(canvas, data);
     this.view.addLayer(layer);
 
+    this.view.addTool(new SelectAreaTool(layer));
     this.view.addTool(new CreateLinesTool(layer));
     this.view.addTool(new AddNodeOnLineTool(layer));
     this.view.addTool(new DragPointsTool(layer));
     this.view.addTool(new SelectOnClickTool(layer));
-    this.view.addTool(new SelectAreaTool(layer));
     this.view.addTool(layer.actionsTool);
   }
   

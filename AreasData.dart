@@ -512,7 +512,7 @@ class AreasData implements IData {
   {
      var segsToCheck = new List.from(changes.newSegments);
      segsToCheck.addAll(changes.changedSegments.getKeys());
-     
+
      for(AreasSegment seg in segsToCheck)
      {
        //TODO: dumb code here
@@ -539,7 +539,6 @@ class AreasData implements IData {
      }
     
   }
-
   
   AreasSegment _getRightmostSegment(AreasSegment from, AreasPoint p)
   {
