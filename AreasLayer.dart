@@ -20,18 +20,7 @@ class AreasLayer {
     var context = view.context;
     List selection = view.selection;
 
-    for (AreasSegment s in this.data.segments){
-        context.beginPath();
-        context.moveTo(view.xToCanvas(s.p0.x),view.yToCanvas(s.p0.y));
-        context.lineTo(view.xToCanvas(s.p1.x),view.yToCanvas(s.p1.y));
-
-        context.lineWidth = 2;
-        if (selection.indexOf(s) != -1)
-            context.strokeStyle='#F33';
-        else
-            context.strokeStyle='#666666';
-        context.stroke();
-    }
+    context.font="20px Arial";
 
     for (AreasArea a in this.data.areas)
     {
@@ -49,6 +38,28 @@ class AreasLayer {
       context.fill();
     }
 
+    for (AreasSegment s in this.data.segments){
+        context.beginPath();
+        var x0 = view.xToCanvas(s.p0.x);
+        var y0 = view.yToCanvas(s.p0.y);
+        var x1 = view.xToCanvas(s.p1.x);
+        var y1 = view.yToCanvas(s.p1.y);
+        context.moveTo(x0,y0);
+        context.lineTo(x1, y1);
+
+        context.lineWidth = 2;
+        if (selection.indexOf(s) != -1)
+            context.strokeStyle='#F33';
+        else
+            context.strokeStyle='#666666';
+        context.stroke();
+
+        if (view.debug)
+        {
+          context.fillStyle="#000";
+          context.fillText("${s.id}", (x0+x1)/2, (y0+y1)/2-20);
+        }
+    }
     
     for (AreasPoint p in this.data.points){
         double x = view.xToCanvas(p.x);
@@ -61,6 +72,12 @@ class AreasLayer {
         else
             context.fillStyle='#666666';
         context.fill();
+        
+        if (view.debug)
+        {
+          context.fillStyle="#000";
+          context.fillText("${p.id}", x-5, y-20);
+        }
     }
         
     for (IAction action in this.actions){

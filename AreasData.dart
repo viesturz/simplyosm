@@ -516,10 +516,12 @@ class AreasData implements IData {
        //TODO: dumb code here
        
        var areaSegs = this._findAreaClockwise(seg.p0, seg);
-       this._tryNewArea(seg.p0, areaSegs);
+       if (areaSegs != null)
+         this._tryNewArea(seg.p0, areaSegs);
 
        areaSegs = this._findAreaClockwise(seg.p1, seg);
-       this._tryNewArea(seg.p1, areaSegs);
+       if (areaSegs != null)
+         this._tryNewArea(seg.p1, areaSegs);
      }
      
      
@@ -618,7 +620,7 @@ class AreasData implements IData {
       p1 = p2;
       p2 = seg.otherEnd(p1);
       
-      angle += Geometry.angleBetweenVectors(p1.x-p0.x,p1.y-p1.y, p2.x-p1.x, p2.y - p1.y);     
+      angle += Geometry.angleBetweenVectors(p1.x-p0.x,p1.y-p0.y, p2.x-p1.x, p2.y - p1.y);     
     }
     
     //the shape should go clockwise, counterclockwise means outer shape

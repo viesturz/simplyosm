@@ -197,6 +197,8 @@ class CreateLinesTool extends AreasTool{
     if (this.line == null)
         return Tool.STATUS_SKIP;
 
+    //TODO: merge nodes if hovering over another node.
+    
     //handle this event but do nothing
     return Tool.STATUS_ACTIVE;
   }
