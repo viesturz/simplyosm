@@ -63,7 +63,7 @@ class AreasData implements IData {
   
   void commitChanges(){
     //Update areas
-    //TODO:
+    this._updateAreasAfterEdit(this.current_action);
     
     //commit
     this.redo_stack.clear();
@@ -184,7 +184,7 @@ class AreasData implements IData {
     for(AreasArea a in this.areas)
     {
       var i0 = this.areas.indexOf(a);
-      assert(this.areas.indexOf(a, i0) == -1);
+      assert(this.areas.indexOf(a, i0 + 1) == -1);
       
       assert(this.points.indexOf(a.start) != -1);
       assert(a.segments.length > 0);
@@ -399,6 +399,7 @@ class AreasData implements IData {
           {
             //insert after
             area.segments.insertRange(i+1, 1, seg1);
+            i++;
           }
           else if (ap0 == s.p1)
           {
@@ -497,6 +498,25 @@ class AreasData implements IData {
     //TODO: merge tags
     this.removeSegment(s2);
   }
+
+  void _updateAreasAfterEdit(AreasChange changes)
+  {
+     var segsToCheck = new List.from(changes.newSegments);
+     segsToCheck.addAll(changes.changedSegments.getKeys());
+     
+     for(AreasSegment seg in segsToCheck)
+     {
+       //TODO: dumb code here
+       
+       var areaSegs = this._findAreaClockwise(seg.p0, seg);
+       this._tryNewArea(seg.p0, areaSegs);
+
+       areaSegs = this._findAreaClockwise(seg.p1, seg);
+       this._tryNewArea(seg.p1, areaSegs);
+     }
+    
+  }
+
   
   AreasSegment _getRightmostSegment(AreasSegment seg, AreasPoint p)
   {
@@ -524,7 +544,7 @@ class AreasData implements IData {
     return result;
   }
   
-  List<AreasSegment> _findAreaClockwise(AreasSegment start, AreasPoint fromp)
+  List<AreasSegment> _findAreaClockwise(AreasPoint fromp, AreasSegment start)
   {
     List<AreasSegment> result = [];
     List<AreasPoint> pts = [];
@@ -564,6 +584,9 @@ class AreasData implements IData {
   
   void _tryNewArea(var startingPoint, List<AreasSegment> segments)
   {
+    assert(segments != null);
+    assert(segments.length >= 2);
+    
     //check if this is outer shape
     double angle = 0.0;
     
@@ -583,7 +606,31 @@ class AreasData implements IData {
     if (angle <= 0)
       return;
     
-
+    //check if the shape has zero volume
+    Map<AreasSegment, int> segmentTimes = new Map<AreasSegment, int>();
+    for (var seg in segments)
+    {
+      if (segmentTimes.containsKey(seg))
+      {
+        segmentTimes[seg] += 1;
+      }
+      else
+      {
+        segmentTimes[seg] = 1;
+      }
+    }
+    
+    bool hasVolume = false;
+    for (var seg in segmentTimes.getKeys())
+    {
+      int times = segmentTimes[seg];
+      assert(times <= 2);
+      hasVolume = hasVolume || (times == 1);  
+    }
+    
+    if (!hasVolume)
+      return;
+    
     //check if such shape already exists
     var commonShapes = [];
     commonShapes.addAll(segments[0].areas);
@@ -721,7 +768,7 @@ class AreasArea implements Hashable{
   
   void removeSegment(AreasSegment segment)
   {
-    //TODO: this possiby makes the area invalid - there is a breaking.
+    //this possiby makes the area invalid - need to run updateAreas afterwards.
     
     for(int i = 0; i < this.segments.length; i ++)
     {

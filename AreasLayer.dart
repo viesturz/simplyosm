@@ -33,19 +33,6 @@ class AreasLayer {
         context.stroke();
     }
 
-    for (AreasPoint p in this.data.points){
-        double x = view.xToCanvas(p.x);
-        double y = view.yToCanvas(p.y);
-        context.beginPath();
-        context.arc(x,y,5, 0, 2*PI, false);
-
-        if (selection.indexOf(p) != -1)
-            context.fillStyle='#F33';
-        else
-            context.fillStyle='#666666';
-        context.fill();
-    }
-    
     for (AreasArea a in this.data.areas)
     {
       context.beginPath();
@@ -61,7 +48,21 @@ class AreasLayer {
       context.fillStyle='#CFC';
       context.fill();
     }
+
     
+    for (AreasPoint p in this.data.points){
+        double x = view.xToCanvas(p.x);
+        double y = view.yToCanvas(p.y);
+        context.beginPath();
+        context.arc(x,y,5, 0, 2*PI, false);
+
+        if (selection.indexOf(p) != -1)
+            context.fillStyle='#F33';
+        else
+            context.fillStyle='#666666';
+        context.fill();
+    }
+        
     for (IAction action in this.actions){
       action.paint(this.view);
     }
