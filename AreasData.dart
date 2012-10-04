@@ -272,6 +272,13 @@ class AreasData implements IData {
     if (p1.segments.length == 0)
         this.removePoint(p1);
   }
+  
+  void removeArea(AreasArea area)
+  {
+    this.current_action.deletedArea(area); //makrs segments as modified
+    area.disconnect(); //removes area from segments
+    this.areas.removeRange(this.areas.indexOf(area), 1);
+  }
 
   void deleteItems(List<Object> itemList){
 
@@ -513,6 +520,18 @@ class AreasData implements IData {
 
        areaSegs = this._findAreaClockwise(seg.p1, seg);
        this._tryNewArea(seg.p1, areaSegs);
+     }
+     
+     
+     //delete trivial areas
+     for(int i = 0; i < this.areas.length; i ++)
+     {
+       var a = this.areas[i];
+       if (a.segments.length < 3)
+       {
+         this.removeArea(a);
+         i --;
+       }       
      }
     
   }
