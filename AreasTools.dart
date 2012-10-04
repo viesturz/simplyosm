@@ -45,6 +45,31 @@ class AreasTool extends Tool{
 }
 
 
+class SelectAreaTool extends AreasTool{
+
+  SelectAreaTool(AreasLayer layer): super(layer)
+  {
+  }
+
+  int mouseDown(double canvasX, double canvasY){
+    return Tool.STATUS_SKIP;
+  }
+
+  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, evt){
+    if (evt.which == 0)
+    {
+        var a = this.layer.findArea(canvasX, canvasY);
+        if (a != null)
+        {
+            this.view.setSelected([a]);
+            return Tool.STATUS_FINISHED;
+        }
+    }
+
+    return Tool.STATUS_SKIP;
+  }
+}
+
 class SelectOnClickTool extends AreasTool{
 
   SelectOnClickTool(AreasLayer layer): super(layer)

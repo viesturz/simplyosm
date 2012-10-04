@@ -70,7 +70,7 @@ class Geometry {
     return (x - x1) * (x-x1) + (y-y1)* (y-y1);
   }
   
-  static bool isToTheLeft(double px, double py, double rightx, double righty, double leftx, double lefty)
+  static bool isLeftToRight(double px, double py, double leftx, double lefty, double rightx, double righty)
   {
     var dx0 = rightx - px;
     var dy0 = righty - py;

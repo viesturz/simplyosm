@@ -406,12 +406,14 @@ class AreasData implements IData {
           {
             //insert after
             area.segments.insertRange(i+1, 1, seg1);
+            seg1.areas.add(area);
             i++;
           }
           else if (ap0 == s.p1)
           {
             //insert before
             area.segments.insertRange(i, 1, seg1);
+            seg1.areas.add(area);
             i ++;
           }
           else
@@ -539,29 +541,43 @@ class AreasData implements IData {
   }
 
   
-  AreasSegment _getRightmostSegment(AreasSegment seg, AreasPoint p)
+  AreasSegment _getRightmostSegment(AreasSegment from, AreasPoint p)
   {
     AreasSegment result = null;
+    var p0 = from.otherEnd(p);
     
     for (AreasSegment s in p.segments)
     {
-      if (s == seg) continue;
+      if (s == from) continue;
       if (result == null)
       {
         result = s;
       }
       else
       {
-        var pr = result.otherEnd(p);
         var ps = s.otherEnd(p);
-        if (!Geometry.isToTheLeft(p.x, p.y, pr.x, pr.y, ps.x, ps.y))
+        var pr = result.otherEnd(p);
+        
+        bool toRight;
+        if (Geometry.isLeftToRight(p0.x,p0.y, p.x, p.y, ps.x, ps.y))
+        {//ps to the right of from direction
+          toRight = !Geometry.isLeftToRight(p0.x, p0.y, p.x, p.y, pr.x, pr.y) || 
+               Geometry.isLeftToRight(p.x,p.y, pr.x, pr.y, ps.x, ps.y);
+        }
+        else
+        {//ps straight or to the left of from direction
+          toRight = Geometry.isLeftToRight(p0.x, p0.y, pr.x, pr.y, p.x, p.y) &&
+              Geometry.isLeftToRight(p.x, p.y, pr.x, pr.y, ps.x, ps.y);   
+        }
+        
+        if (toRight)
         {
           result = s;
         }
       }
     }
       
-    if (result == null) result = seg;
+    if (result == null) result = from;
     return result;
   }
   

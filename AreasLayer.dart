@@ -16,30 +16,73 @@ class AreasLayer {
     this.view = _view;
   }
 
+  
+  void paintArea(AreasArea a, bool selected)
+  {
+    var context = view.context;
+    context.beginPath();
+    AreasPoint p = a.start;
+    var x = view.xToCanvas(p.x);
+    var y = view.yToCanvas(p.y);
+    context.moveTo(x, y);
+
+    for (AreasSegment seg in a.segments)
+    {
+      p = seg.otherEnd(p);
+      x = view.xToCanvas(p.x);
+      y = view.yToCanvas(p.y);
+      context.lineTo(x, y);
+    }
+    
+    if (selected)
+      context.fillStyle='#FFC';
+    else
+      context.fillStyle='#CFC';
+    context.fill();
+  }
+  
   void paint(){
     var context = view.context;
     List selection = view.selection;
 
     context.font="20px Arial";
 
+    
     for (AreasArea a in this.data.areas)
     {
-      context.beginPath();
-      AreasPoint p = a.start;
-      context.moveTo(view.xToCanvas(p.x), view.yToCanvas(p.y));
-      
-      for (AreasSegment seg in a.segments)
-      {
-         p = seg.otherEnd(p);
-         context.lineTo(view.xToCanvas(p.x), view.yToCanvas(p.y));
-      }
-      
-      context.fillStyle='#CFC';
-      context.fill();
+      if (selection.indexOf(a) == -1)
+        this.paintArea(a, false);
     }
     
-    var s0 = null;
-
+    for (AreasArea a in this.data.areas)
+    {
+      if (selection.indexOf(a) != -1)
+        this.paintArea(a, true);
+    }
+    
+    if (view.debug)
+    {
+        
+      for (AreasArea a in this.data.areas)
+      {
+        AreasPoint p = a.start;
+        var centerX = 0.0;
+        var centerY = 0.0;
+        
+        for (AreasSegment seg in a.segments)
+        {
+           p = seg.otherEnd(p);
+           centerX += view.xToCanvas(p.x);
+           centerY += view.yToCanvas(p.y);
+        }
+        
+        centerX /= a.segments.length;
+        centerY /= a.segments.length;        
+        context.fillStyle="#D0D";
+        context.fillText("${a.id}", centerX, centerY);        
+      }
+    }
+    
     for (AreasSegment s in this.data.segments){
         context.beginPath();
         var x0 = view.xToCanvas(s.p0.x);
@@ -68,8 +111,6 @@ class AreasLayer {
             context.fillText("${angle}", x0 + 20, y0);
           }*/
         }
-        
-        s0 = s;
     }
     
     for (AreasPoint p in this.data.points){
@@ -148,6 +189,45 @@ class AreasLayer {
       return best;
   }
 
+
+  AreasArea findArea(double canvasX, double canvasY){
+      double treshold = 7/this.view.zoom;
+      double x = this.view.xToData(canvasX);
+      double y = this.view.yToData(canvasY);
+      AreasArea best = null;
+
+      for (AreasArea area in this.data.areas){
+
+        //find top
+        double y0 = area.start.y;
+        var p = area.start;
+        for(AreasSegment s in area.segments)
+        {
+          p = s.otherEnd(p);
+          y0 = min(y0, p.y);
+        }
+
+        y0 -= treshold;
+        if (y < y0) continue;
+
+        //count intersections betwen x,y->x,y0
+        
+        int intersections = 0;
+        for (AreasSegment seg in area.segments)
+        {
+          var intersection = Geometry.intersection(x, y, x, y0, seg.p0.x, seg.p0.y, seg.p1.x,seg.p1.y);
+          if (intersection != null) intersections += 1;
+        }
+        
+        if (intersections %2 == 1)
+        {
+          return area;
+        }
+      }
+
+      return best;
+  }
+  
   void update()
   {
     this.actions = [];

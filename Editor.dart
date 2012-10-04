@@ -14,6 +14,7 @@ class Editor {
     this.view.addTool(new AddNodeOnLineTool(layer));
     this.view.addTool(new DragPointsTool(layer));
     this.view.addTool(new SelectOnClickTool(layer));
+    this.view.addTool(new SelectAreaTool(layer));
     this.view.addTool(layer.actionsTool);
   }
   
