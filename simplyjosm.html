@@ -8,8 +8,10 @@
     <h1>simplyjosm</h1>
     <p id="status">dart is not running</p>
     <p> <a id="undo" href="#">Undo</a> <a id="redo" href="#">Redo</a></p>
-    <div><canvas id="mapCanvas" width="1000" height="700"></canvas></div>    
-
+    <p> <a id="debug" href="#">Debug info</a></p>
+    <div style="background:#000;width:1000px;height:1000px;position:relative;">
+    	<canvas style="background:#FFF;margin:2px" width=996px height=998px id="mapCanvas"></canvas>
+    </div>
     <script type="application/dart" src="simplyjosm.dart"></script>
     <script src="dart.js"></script>
   </body>

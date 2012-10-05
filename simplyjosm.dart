@@ -22,9 +22,12 @@ class simplyjosm {
 
   void run() {  
     
-    var e = new Editor(document.query('#mapCanvas'));
+    //update canvas size to fit parent
+    var canvas = document.query('#mapCanvas');    
+    var e = new Editor(canvas);
     document.query('#undo').on.click.add((event) => e.undo());
     document.query('#redo').on.click.add((event) => e.redo());
+    document.query('#debug').on.click.add((event) => e.toggleDebug());
     
     write("Editor started!");
   }

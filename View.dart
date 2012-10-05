@@ -16,7 +16,7 @@ class View {
   double zoom;
   double centerX;
   double centerY;
-  bool debug = true;
+  bool debug = false;
 
   List<Object> selection;
 

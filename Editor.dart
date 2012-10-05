@@ -26,4 +26,10 @@ class Editor {
   {
     this.view.redo();
   }
+
+  void toggleDebug()
+  {
+    this.view.debug = ! this.view.debug;
+    this.view.paint();
+  }
 }
