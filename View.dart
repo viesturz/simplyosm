@@ -124,9 +124,9 @@ class View {
     if (this.activeTool != null)
     {
         var r = eventFunc(this.activeTool);
-        if (r ==Tool.STATUS_FINISHED)
+        if (r !=Tool.STATUS_ACTIVE)
             this.activeTool = null;
-        if (r !== Tool.STATUS_SKIP)
+        if (r != Tool.STATUS_SKIP)
             handled = true;
     }
 
@@ -225,7 +225,7 @@ class View {
 class CancelTool extends Tool{
   CancelTool(){}
   int mouseDown(canvasX,canvasY){return Tool.STATUS_SKIP;}
-  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, dragging){return (dragging != 0) ? Tool.STATUS_ACTIVE : Tool.STATUS_SKIP;}
+  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, MouseEvent evt){return (evt.which != 0) ? Tool.STATUS_ACTIVE : Tool.STATUS_SKIP;}
   int mouseUp(canvasX,canvasY){return Tool.STATUS_FINISHED;}
 }
 
