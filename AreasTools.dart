@@ -214,35 +214,18 @@ class CreateLinesTool extends AreasTool{
   AreasPoint newPoint = null;
   AreasSegment line = null;
   AreasPoint startingPoint = null;
+  bool finished = false;
 
   CreateLinesTool(AreasLayer layer):super(layer){
   }
 
-  int mousedown(canvasX,canvasY){
-    if (this.line == null)
-        return Tool.STATUS_SKIP;
-
-    //TODO: merge nodes if hovering over another node.
-    
-    //handle this event but do nothing
-    return Tool.STATUS_ACTIVE;
-  }
-
-  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, MouseEvent evt){
-    if (this.line == null)
-        return Tool.STATUS_SKIP;
-
-    this.moveAndSnap(this.newPoint, this.line, canvasX, canvasY);
-    return Tool.STATUS_ACTIVE;
-  }
-
-  int mouseUp(canvasX,canvasY){
-    var x = this.view.xToData(canvasX);
-    var y = this.view.yToData(canvasY);
-    AreasPoint p0 = this.layer.findPoint(canvasX, canvasY, this.newPoint);
-
+  int mouseDown(canvasX,canvasY){
     if (this.line != null)
     {
+        var x = this.view.xToData(canvasX);
+        var y = this.view.yToData(canvasY);
+        AreasPoint p0 = this.layer.findPoint(canvasX, canvasY, this.newPoint);
+
         this.startingPoint = null;
 
         if (p0 != null)
@@ -255,7 +238,9 @@ class CreateLinesTool extends AreasTool{
             this.newPoint = null;
             this.data.commitChanges();
             this.layer.update();
-            return Tool.STATUS_FINISHED;
+            //hold on the control a bit, to consume the mouse up event.
+            this.finished = true;
+            return Tool.STATUS_ACTIVE;
         }
         else
         {
@@ -263,30 +248,58 @@ class CreateLinesTool extends AreasTool{
 
             if (s0 != null)
             {
-                this.data.splitSegment(s0.item, this.newPoint);
-                this.view.setSelected(this.data.getLineSegments(this.line));
-                this.line = null;
-                this.newPoint = null;
-                this.data.commitChanges();
-                this.layer.update();
-                return Tool.STATUS_FINISHED;
+              this.data.splitSegment(s0.item, this.newPoint);
+              this.view.setSelected(this.data.getLineSegments(this.line));
+              this.line = null;
+              this.newPoint = null;
+              this.data.commitChanges();
+              this.layer.update();
+              //hold on the control a bit, to consume the mouse up event.
+              this.finished = true;
+              return Tool.STATUS_ACTIVE;
             }
             else
             {
-                //commit changes
-                this.data.commitChanges();
-                this.layer.update();
+              //commit changes
+              this.data.commitChanges();
+              this.layer.update();
   
-                //continue drawing next segment
-                var pp = this.newPoint;
-                this.newPoint = this.data.newPoint(x,y);
-                this.line = this.data.newSegment(pp, this.newPoint);
-                this.view.setSelected([this.line, this.newPoint]);
-                return Tool.STATUS_ACTIVE;
+              //continue drawing next segment
+              var pp = this.newPoint;
+              this.newPoint = this.data.newPoint(x,y);
+              this.line = this.data.newSegment(pp, this.newPoint);
+              this.view.setSelected([this.line, this.newPoint]);
+              return Tool.STATUS_ACTIVE;
             }
         }
     }
     else
+    {
+        return Tool.STATUS_SKIP;
+    }
+  }
+
+  int mouseMove(canvasX, canvasY, canvasXPrev, canvasYPrev, MouseEvent evt){
+    if (this.line == null){
+      this.finished = false;
+      return Tool.STATUS_SKIP;
+    }
+
+    this.moveAndSnap(this.newPoint, this.line, canvasX, canvasY);
+    return Tool.STATUS_ACTIVE;
+  }
+
+  int mouseUp(canvasX,canvasY){
+    var x = this.view.xToData(canvasX);
+    var y = this.view.yToData(canvasY);
+    AreasPoint p0 = this.layer.findPoint(canvasX, canvasY, this.newPoint);
+
+    if (this.finished)
+    {
+      this.finished = false;
+      return Tool.STATUS_FINISHED;
+    }
+    else if (this.line == null)
     {
         //start drawing new segment
         if (p0 == null)
@@ -300,21 +313,19 @@ class CreateLinesTool extends AreasTool{
         this.view.setSelected([this.line, this.newPoint]);
         return Tool.STATUS_ACTIVE;
     }
+    else
+    {
+      return Tool.STATUS_ACTIVE;
+    }
   }
 
   int cancel(){
     if (this.line != null){
-        if (this.startingPoint != null)
-        {
-            this.data.removePoint(this.startingPoint);
-        }
-
-        this.data.removeSegment(this.line);
-        this.data.removePoint(this.newPoint);
-        this.line = null;
-        this.newPoint = null;
-        this.startingPoint = null;
-        this.view.setSelected([]);
+      this.data.cancelChanges();
+      this.line = null;
+      this.newPoint = null;
+      this.startingPoint = null;
+      this.view.setSelected([]);
     }
   }
 }

@@ -156,6 +156,8 @@ class View {
       double y = evt.offsetY.toDouble();
 
       bool handled = handleToolEvent((tool) => tool.mouseDown(x, y));
+      this.prevX = x;
+      this.prevY = y;
       evt.preventDefault();
   }
 
@@ -172,7 +174,7 @@ class View {
       int buttons = evt.which;
 
       //drag delay - do not react on tiny drags.
-      if (buttons != 0 && this.activeTool == null && this.prevX != null)
+      if (buttons != 0 && this.prevX != null)
       {
           if (Geometry.distanceSquared(this.prevX, this.prevY, x,y) < 5*5)
           {
