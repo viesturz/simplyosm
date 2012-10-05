@@ -490,24 +490,6 @@ class AreasData implements IData {
   /// Private stuff
   ///
   
-  void _mergeParralelSegments(AreasSegment s1, AreasSegment s2){
-    assert(s1.otherEnd(s1.p0) == s2.otherEnd(s1.p0));
-   
-    this.current_action.modifiedSegment(s1);
-    this.current_action.modifiedSegment(s2);
-    
-    //merge areas
-    while (s2.areas.length > 0)
-    {
-      AreasArea a = s2.areas[s2.areas.length];
-      this.current_action.modifiedArea(a);
-      a.replaceSegment(s2,s1);
-    }
-    
-    //TODO: merge tags
-    this.removeSegment(s2);
-  }
-
   void _updateAreasAfterEdit(AreasChange changes)
   {
      var segsToCheck = new List.from(changes.newSegments);
@@ -691,6 +673,26 @@ class AreasData implements IData {
     this.current_action.newAreas.add(area);
     this.areas.add(area);
   }
+  
+  void _mergeParralelSegments(AreasSegment s1, AreasSegment s2)
+  {
+    assert(s1.otherEnd(s1.p0) == s2.otherEnd(s1.p0));
+   
+    this.current_action.modifiedSegment(s1);
+    this.current_action.modifiedSegment(s2);
+    
+    //merge areas
+    while (s2.areas.length > 0)
+    {
+      AreasArea a = s2.areas[s2.areas.length - 1];
+      this.current_action.modifiedArea(a);
+      a.replaceSegment(s2,s1);
+    }
+    
+    //TODO: merge tags
+    this.removeSegment(s2);
+  }
+  
 }
 
 

@@ -300,8 +300,6 @@ class CreateLinesTool extends AreasTool{
         this.view.setSelected([this.line, this.newPoint]);
         return Tool.STATUS_ACTIVE;
     }
-
-    return Tool.STATUS_SKIP;
   }
 
   int cancel(){
