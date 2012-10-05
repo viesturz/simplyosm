@@ -1,4 +1,4 @@
 - Implement merge points on mouse down when drawing new line.
 
-- Investigate OpenLayers libary for rendering and event handling.
+- Investigate OpenLayers library for rendering and event handling.
   Would also be nice because they have support for rendering existing stuff.
