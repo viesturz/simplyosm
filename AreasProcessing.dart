@@ -80,8 +80,89 @@ class AreasProcessing {
     return result;
   }
 
+  // Splits the segments chain into one or several areas, by removeing segements that are used twice.
+  static List<List<AreasSegment>> extractProperAreas(List<AreasSegment> segments)
+  {
+    Map<AreasSegment, int> segmentPos = new Map<AreasSegment, int>();
+    List<List<AreasSegment>> result = [];
 
-  static void tryNewArea(AreasData data, var startingPoint, List<AreasSegment> segments)
+    for(int i = 0; i < segments.length; i++)
+    {
+      AreasSegment seg = segments[i];
+      if (segmentPos.containsKey(seg))
+      {
+        var starti = segmentPos[seg];
+        var endi = i;
+
+        if (starti +1 < endi)
+        {
+          result.add(segments.getRange(starti+1, endi-starti-1));
+        }
+
+        //backtrack until first split
+        while (starti >=0 && endi < segments.length && segments[starti] == segments[endi])
+        {
+          starti --;
+          endi ++;
+        }
+        
+        //remove the range
+        segments.removeRange(starti+1, endi-starti-1);
+        i = starti;
+        //continue on.
+      }
+      else
+      {
+        segmentPos[seg] = i;
+      }
+    }
+
+    //if there is something left in segments it's a good shape
+    if (segments.length > 0)
+    {
+      result.add(segments);
+    }
+
+    return result;
+  }
+
+  static void processNewSegment(AreasData data, AreasSegment segment)
+  {
+    var segs = findAreaClockwise(segment.p0, segment);
+    if (segs != null)
+    {
+      var areas = extractProperAreas(segs);
+      for(var area in areas)
+      {
+        tryNewArea(data, area);
+      }
+    }
+
+    segs = findAreaClockwise(segment.p1, segment);
+    if (segs != null)
+    {
+      var areas = extractProperAreas(segs);
+      for(var area in areas)
+      {
+        tryNewArea(data, area);
+      }
+    }
+  }
+
+  static void processChangedArea(AreasData data, AreasArea area)
+  {
+
+    if (area.segments.length < 3)
+    {
+      data.removeArea(a);
+    }
+    else
+    {
+      //TODO:
+    }
+  }
+
+  static void tryNewArea(AreasData data, List<AreasSegment> segments)
   {
     assert(segments != null);
     assert(segments.length >= 2);
@@ -90,14 +171,13 @@ class AreasProcessing {
     double angle = 0.0;
 
     var p0 = null;
-    var p1 = segments[segments.length - 1].otherEnd(startingPoint);
-    var p2 = startingPoint;
+    var p2 = segments[0].commonPoint(segments.last());
+    var p1 = segments.last().otherEnd(p2);
     for (var seg in segments)
     {
       p0 = p1;
       p1 = p2;
       p2 = seg.otherEnd(p1);
-
       angle += Geometry.angleBetweenVectors(p1.x-p0.x,p1.y-p0.y, p2.x-p1.x, p2.y - p1.y);
     }
 
@@ -143,7 +223,7 @@ class AreasProcessing {
       return;
 
     //add new area
-    data.newArea(startingPoint, segments);
+    data.newArea(segments);
 
   }
 

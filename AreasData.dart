@@ -34,28 +34,26 @@ class AreasData implements IData {
   void undo(){
     this.cancelChanges();
     
-    if (this.undo_stack.length > 0)
-    {
-      var undo = this.undo_stack.removeLast();
-      var redo = this._revertChanges(undo);
-      this.redo_stack.add(redo);
-    }
-    
+    if (this.undo_stack.length == 0)
+      return;
+     
+    var undo = this.undo_stack.removeLast();
+    var redo = this._revertChanges(undo);
+    this.redo_stack.add(redo);
+
     //TODO: update crossings.
-    
     this.check();
   }
 
   void redo(){
     this.cancelChanges();
     
-    if (this.redo_stack.length > 0)
-    {
-      var redo = this.redo_stack.removeLast();
-      var undo = this._revertChanges(redo);
-      this.undo_stack.add(undo);
-    }
-    
+    if (this.redo_stack.length == 0)
+      return;
+   
+    var redo = this.redo_stack.removeLast();
+    var undo = this._revertChanges(redo);
+    this.undo_stack.add(undo);    
     //TODO: update crossings.
     
     this.check();
@@ -185,14 +183,15 @@ class AreasData implements IData {
     {
       var i0 = this.areas.indexOf(a);
       assert(this.areas.indexOf(a, i0 + 1) == -1);
-      
-      assert(this.points.indexOf(a.start) != -1);
-      assert(a.segments.length > 0);
-      assert(a.segments[0].p0 == a.start || a.segments[0].p1 == a.start);
-      
-      for(var seg in a.segments)
+
+      assert(a.segments.length > 2);
+      assert(a.segments[0] != a.segments.last());
+
+      var p0 = a.startPoint();
+      for(AreasSegment seg in a.segments)
       {
         assert(this.segments.indexOf(seg) != -1);
+        p0 = seg.otherEnd(p0);
       }
     }
     
@@ -219,9 +218,9 @@ class AreasData implements IData {
   }
 
 
-  AreasArea newArea(AreasPoint startingPoint, List<AreasSegment> segments)
+  AreasArea newArea(List<AreasSegment> segments)
   {
-    var area = new AreasArea(this.nextId++, startingPoint, segments);
+    var area = new AreasArea(this.nextId++, segments);
 
     for(var seg in segments)
     {
@@ -233,7 +232,7 @@ class AreasData implements IData {
     this.areas.add(area);
   }
 
-  
+
   void removePoint(AreasPoint p){
     var i = this.points.indexOf(p);
     if (i == -1)
@@ -250,7 +249,7 @@ class AreasData implements IData {
     else
     {
         while (p.segments.length > 0){
-            this.removeSegment(p.segments[p.segments.length - 1]);
+            this.removeSegment(p.segments.last());
         }
     }
     
@@ -269,7 +268,7 @@ class AreasData implements IData {
     //reconnect areas
     while (segment.areas.length > 0)
     {
-      AreasArea a = segment.areas[segment.areas.length -1];
+      AreasArea a = segment.areas.last();
       this.current_action.modifiedArea(a);
       a.removeSegment(segment);
     }
@@ -311,6 +310,8 @@ class AreasData implements IData {
             this.removePoint(itemList[i]);
         }
     }
+    
+    this.commitChanges();
   }
 
   void movePoint(AreasPoint p, double x, double y){
@@ -347,7 +348,7 @@ class AreasData implements IData {
 
     //merge remaining segments
     while (p1.segments.length > 0){
-        var s = p1.segments[p1.segments.length - 1];
+        var s = p1.segments.last();
         var pp = s.otherEnd(p1);
         var segI = neighborPoints.indexOf(pp);
 
@@ -374,11 +375,14 @@ class AreasData implements IData {
 
   AreasSegment joinSegments(AreasSegment s1, AreasPoint via, AreasSegment s2){
     this.current_action.modifiedSegment(s1);
-    
+    this.current_action.modifiedSegment(s2);
+    this.current_action.modifiedPoint(s2.otherEnd(via));
+    this.current_action.modifiedPoint(via);
+
     //update areas
     for (var area in s2.areas)
     {
-      var ap0 = area.start;
+      var ap0 = area.startPoint();
       for(int i = 0; i < area.segments.length; i ++) 
       {
         var s = area.segments[i];
@@ -395,6 +399,7 @@ class AreasData implements IData {
     }
         
     //TODO: merge tags
+
     s1._changeEnd(via, s2.otherEnd(via));
     this.removeSegment(s2);
     return s1;
@@ -411,7 +416,7 @@ class AreasData implements IData {
     {
       this.current_action.modifiedArea(area);
       
-      var ap0 = area.start;
+      var ap0 = area.startPoint();
       for(int i = 0; i < area.segments.length; i ++) 
       {
         var s = area.segments[i];
@@ -511,31 +516,19 @@ class AreasData implements IData {
      var segsToCheck = new List.from(changes.newSegments);
      segsToCheck.addAll(changes.changedSegments.getKeys());
 
-     for(AreasSegment seg in segsToCheck)
-     {
-       //TODO: dumb code here
-       
-       var areaSegs = AreasProcessing.findAreaClockwise(seg.p0, seg);
-       if (areaSegs != null)
-         AreasProcessing.tryNewArea(this, seg.p0, areaSegs);
+     var areasToCheck = new List.from(changes.changedAreas.getKeys());
+     
+     //update changed areas
+    for(var a in areasToCheck)
+    {
+      AreasProcessing.processChangedArea(this, a);
+    }
 
-       areaSegs = AreasProcessing.findAreaClockwise(seg.p1, seg);
-       if (areaSegs != null)
-         AreasProcessing.tryNewArea(this, seg.p1, areaSegs);
-     }
-     
-     
-     //delete trivial areas
-     for(int i = 0; i < this.areas.length; i ++)
-     {
-       var a = this.areas[i];
-       if (a.segments.length < 3)
-       {
-         this.removeArea(a);
-         i --;
-       }       
-     }
-    
+    for(AreasSegment seg in segsToCheck)
+    {
+      AreasProcessing.processNewSegment(this, seg);
+    }
+
   }
   
 
@@ -549,7 +542,7 @@ class AreasData implements IData {
     //merge areas
     while (s2.areas.length > 0)
     {
-      AreasArea a = s2.areas[s2.areas.length - 1];
+      AreasArea a = s2.areas.last();
       this.current_action.modifiedArea(a);
       a.replaceSegment(s2,s1);
     }
@@ -648,13 +641,11 @@ class AreasSegment implements Hashable{
 
 class AreasArea implements Hashable{
   int id;
-  AreasPoint start;
   List<AreasSegment> segments;
 
-  AreasArea(int id, AreasPoint start, List<AreasSegment> segments)
+  AreasArea(int id, List<AreasSegment> segments)
   {
     this.id = id;
-    this.start = start;
     this.segments = segments;
   }
   
@@ -668,10 +659,15 @@ class AreasArea implements Hashable{
       seg.areas.removeRange(pos, 1);
     }
   }
+
+  AreasPoint startPoint()
+  {
+    return this.segments[0].commonPoint(this.segments.last());
+  }
   
   void removeSegment(AreasSegment segment)
   {
-    //this possiby makes the area invalid - need to run updateAreas afterwards.
+    //this possibly makes the area invalid - need to run updateAreas afterwards.
     
     for(int i = 0; i < this.segments.length; i ++)
     {
@@ -770,7 +766,7 @@ class AreasChange{
     if (this.changedAreas.containsKey(a))
       return;
    
-    AreasArea copy = new AreasArea(a.id, a.start,new List.from(a.segments));  
+    AreasArea copy = new AreasArea(a.id, new List.from(a.segments));
     this.changedAreas[a] = copy;
   }
 
@@ -778,8 +774,7 @@ class AreasChange{
   {
     assert(this.changedAreas.containsKey(a));
     AreasArea copy = this.changedAreas[a];
-    a.start = copy.start;
-    a.segments = new List.from(copy.segments);  
+    a.segments = new List.from(copy.segments);
   }
 
   void deletedPoint(AreasPoint p)

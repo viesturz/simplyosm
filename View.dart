@@ -37,7 +37,7 @@ class View {
       canvas.on.mouseDown.add((event) => this.handleMouseDown(event));
       canvas.on.mouseUp.add((event) => this.handleMouseUp(event));
       canvas.on.mouseMove.add(this.handleMouseMove);
-      canvas.on.mouseWheel.add(this.handleMouseWheel);
+      canvas.on.mouseWheel.add( this.handleMouseWheel);
       window.on.keyDown.add(this.handleKeyDown);
 
       this.addTool(new PanTool());
@@ -191,7 +191,7 @@ class View {
   }
 
 
-  void handleMouseWheel(evt){
+  void handleMouseWheel(WheelEvent evt){
       double x = evt.offsetX.toDouble();
       double y = evt.offsetY.toDouble();
       double d = evt.wheelDeltaY.toDouble();

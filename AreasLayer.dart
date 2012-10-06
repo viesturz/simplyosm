@@ -21,7 +21,7 @@ class AreasLayer {
   {
     var context = view.context;
     context.beginPath();
-    AreasPoint p = a.start;
+    AreasPoint p = a.startPoint();
     var x = view.xToCanvas(p.x);
     var y = view.yToCanvas(p.y);
     context.moveTo(x, y);
@@ -65,7 +65,7 @@ class AreasLayer {
         
       for (AreasArea a in this.data.areas)
       {
-        AreasPoint p = a.start;
+        AreasPoint p = a.startPoint();
         var centerX = 0.0;
         var centerY = 0.0;
         
@@ -199,8 +199,8 @@ class AreasLayer {
       for (AreasArea area in this.data.areas){
 
         //find top
-        double y0 = area.start.y;
-        var p = area.start;
+        var p = area.startPoint();
+        double y0 = p.y;
         for(AreasSegment s in area.segments)
         {
           p = s.otherEnd(p);
