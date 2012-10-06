@@ -8,6 +8,7 @@
 #source('View.dart');
 
 #source('AreasData.dart');
+#source('AreasProcessing.dart');
 #source('AreasLayer.dart');
 #source('AreasTools.dart');
 #source('AreasActions.dart');
