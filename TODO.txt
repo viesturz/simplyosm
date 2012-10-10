@@ -1,7 +1,9 @@
 - Implement merge points on mouse down when drawing new line.
 - Move crossing detection code to AreasData.
 - Make new areas structure that supports holes (missing segments)
-- Implement areas update
+
+- Implement unclosed area support (hit testing, updates)
+- Implement areas update on point moves
 
 - Investigate OpenLayers library for rendering and event handling.
   Would also be nice because they have support for rendering existing stuff.

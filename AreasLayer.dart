@@ -68,6 +68,14 @@ class AreasLayer {
         AreasPoint p = a.startPoint();
         var centerX = 0.0;
         var centerY = 0.0;
+        var count = a.segments.length;
+        
+        if  (!a.isClosed())
+        {
+          centerX += view.xToCanvas(p.x);
+          centerY += view.yToCanvas(p.y);
+          count ++;
+       }
         
         for (AreasSegment seg in a.segments)
         {
@@ -76,8 +84,8 @@ class AreasLayer {
            centerY += view.yToCanvas(p.y);
         }
         
-        centerX /= a.segments.length;
-        centerY /= a.segments.length;        
+        centerX /= count;
+        centerY /= count;        
         context.fillStyle="#D0D";
         context.fillText("${a.id}", centerX, centerY);        
       }

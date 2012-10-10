@@ -184,8 +184,17 @@ class AreasData implements IData {
       var i0 = this.areas.indexOf(a);
       assert(this.areas.indexOf(a, i0 + 1) == -1);
 
-      assert(a.segments.length > 2);
-      assert(a.segments[0] != a.segments.last());
+      
+      if (a.isClosed())
+      {
+        assert(a.segments.length > 2);
+      }
+      else
+      {
+        assert(a.segments.length >= 2);
+      }
+      
+      assert(a.segments[0] != a.segments.last());  
 
       var p0 = a.startPoint();
       for(AreasSegment seg in a.segments)
@@ -220,6 +229,7 @@ class AreasData implements IData {
 
   AreasArea newArea(List<AreasSegment> segments)
   {
+    assert(segments.length >= 2);
     var area = new AreasArea(this.nextId++, segments);
 
     for(var seg in segments)
@@ -518,8 +528,8 @@ class AreasData implements IData {
 
     var areasToCheck = new List.from(changes.changedAreas.getKeys());
     
-    AreasProcessing.processChanges(this, areasToCheck, segsToCheck);
-  }  
+    AreasProcessing.processChanges(this, areasToCheck, segsToCheck, changes.changedPoints.getKeys());
+  }
 
   void _mergeParralelSegments(AreasSegment s1, AreasSegment s2)
   {
@@ -660,7 +670,12 @@ class AreasArea implements Hashable{
 
   AreasPoint startPoint()
   {
-    return this.segments[0].hasCommonPoint(this.segments.last());
+    return this.segments[0].otherEnd(this.segments[0].commonPoint(this.segments[1]));
+  }
+  
+  bool isClosed()
+  {
+    return AreasProcessing.isClosed(this.segments);
   }
   
   void removeSegment(AreasSegment segment)

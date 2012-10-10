@@ -146,9 +146,10 @@ class AreasProcessing {
   //splits in two things - next segment not connected, next segment not the rightmost one.
   static List<List<AreasSegment>> extractContigousSegments(List<AreasSegment> segments)
   {
-    List<List<AreasSegment>> part1 = removeRepeatedSegments(segments);
+    //TODO: remove list copying, removeRepeatedSegments modifies the input list.
+    List<List<AreasSegment>> part1 = removeRepeatedSegments(new List<AreasSegment>.from(segments));
     List<List<AreasSegment>> result = [];
-    
+        
     //split on gaps
     for(List<AreasSegment> list in part1)
     {
@@ -165,7 +166,7 @@ class AreasProcessing {
         {
           splits.add(i);
         }
-        else if (getRightmostSegment(s0, s0.otherEnd(p)) != s)
+        else if (getRightmostSegment(s0, p) != s)
         {
           splits.add(i);
         }
@@ -186,8 +187,8 @@ class AreasProcessing {
         }
         
         //add the last part:
-        var last = list.getRange(0, splits[0]);
-        last.addAll(list.getRange(splits.last(), list.length - splits.last()));
+        var last = list.getRange(splits.last(), list.length - splits.last());
+        last.addAll(list.getRange(0, splits[0]));
         result.add(last);
       }
     }
@@ -221,23 +222,58 @@ class AreasProcessing {
   }
 
   
-  static void processChanges(AreasData data, List<AreasArea> areas, List<AreasSegment> segments)
+  static bool isClosed(List<AreasSegment> segments)
+  {
+    return ((segments.length > 2) && segments[0].hasCommonPoint(segments.last()) != null) ||
+        (segments.length == 2 && segments[0] == segments[1]);
+  }
+  
+  static void processChanges(AreasData data, List<AreasArea> areas, List<AreasSegment> segments, List<AreasPoint> points)
   {
     //Split the areas into contigous parts
     List<AreaPart> parts = [];
     List<AreasArea> areasToUpdate = [];
+
+    //Collect all areas
+    for (var s in segments)
+    {
+      for (var a in s.areas)
+      {
+        if (areas.indexOf(a) == -1)
+        {
+          areas.add(a);
+        }
+      }
+    }
+    
+    for (var p in points)
+    {
+      for (var s in p.segments)
+      {
+        for (var a in s.areas)
+        {
+          if (areas.indexOf(a) == -1)
+          {
+            areas.add(a);
+          }
+        }
+      }
+    }
     
     for(var a in areas)
     {
       List<List<AreasSegment>> segs = extractContigousSegments(a.segments);
       
-      if (segs.length == 1 && segs[0].length == a.segments.length)
+      if (segs.length == 0)
+      {
+        data.removeArea(a);
+      }
+      else if (segs.length == 1 && segs[0].length == a.segments.length && isClosed(segs[0]))
       {
         if (a.segments.length < 3)
         {
           //Proper area needs at least 3 segments
           data.removeArea(a);
-          
         }
         //no change, all as before, skip this
       }
@@ -268,7 +304,10 @@ class AreasProcessing {
       List<AreasSegment> fullArea = findAreaStartingHere(firstPoint, p.segments[0]);
       if (fullArea == null)
       {
-        //TODO: oops, what now?
+        //Just leave as is.
+        data.newArea(p.segments);
+        //TODO: transfer tags.     
+        parts.removeLast();
         continue;
       }
    
@@ -289,6 +328,8 @@ class AreasProcessing {
         int startIndex = 0;
         AreasArea aa = null;
         
+        AreaPart last = null;
+        
         for (AreaPart p in match)
         {
             if (aa == null)
@@ -299,9 +340,16 @@ class AreasProcessing {
             {
               //TODO: Automatic merge parts areas have same tags.
               //split part
-              data.newArea(fullArea.getRange(startIndex, p.position + p.segments.length));
-              startIndex = p.position + p.segments.length;
+              data.newArea(fullArea.getRange(startIndex, last.position + last.segments.length - startIndex));
+              startIndex = last.position + last.segments.length;
             }
+            
+            last = p;
+        }
+        
+        //add last area
+        {
+          data.newArea(fullArea.getRange(startIndex, fullArea.length - startIndex));
         }
                 
       } 
