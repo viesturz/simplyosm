@@ -1,3 +1,5 @@
+
+
 class AreasProcessing {
     AreasProcessing() {
     }
@@ -81,7 +83,7 @@ class AreasProcessing {
   }
 
   // Splits the segments chain into one or several areas, by removeing segements that are used twice.
-  static List<List<AreasSegment>> extractProperAreas(List<AreasSegment> segments)
+  static List<List<AreasSegment>> removeRepeatedSegments(List<AreasSegment> segments)
   {
     Map<AreasSegment, int> segmentPos = new Map<AreasSegment, int>();
     List<List<AreasSegment>> result = [];
@@ -120,7 +122,74 @@ class AreasProcessing {
     //if there is something left in segments it's a good shape
     if (segments.length > 0)
     {
-      result.add(segments);
+      result.add(segments); 
+    }
+
+    return result;
+  }
+  
+
+  static List<AreasSegment> findAreaStartingHere(AreasPoint fromp, AreasSegment start)
+  {
+    var x = findAreaClockwise(fromp, start);
+    var y = removeRepeatedSegments(x);
+    
+    for(List<AreasSegment> z in y)
+    {
+      if (z.indexOf(start) != -1)
+        return z;
+    }
+    
+    return null;
+  }
+  
+  //splits in two things - next segment not connected, next segment not the rightmost one.
+  static List<List<AreasSegment>> extractContigousSegments(List<AreasSegment> segments)
+  {
+    List<List<AreasSegment>> part1 = removeRepeatedSegments(segments);
+    List<List<AreasSegment>> result = [];
+    
+    //split on gaps
+    for(List<AreasSegment> list in part1)
+    {
+      //find splits
+      AreasSegment s0 = list.last();
+      List<int> splits = [];
+      
+      for (int i = 0; i < list.length; i ++)
+      {
+        AreasSegment s = list[i];
+        var p = s0.hasCommonPoint(s);
+        
+        if (p == null)
+        {
+          splits.add(i);
+        }
+        else if (getRightmostSegment(s0, s0.otherEnd(p)) != s)
+        {
+          splits.add(i);
+        }
+        
+        s0 = s;
+      }
+      
+      if (splits.length == 0)
+      {
+        result.add(list);
+      }
+      else
+      {
+        //split in gaps
+        for (int i = 0; i < splits.length - 1; i ++)
+        {
+          result.add(list.getRange(splits[i], splits[i+1] - splits[i]));
+        }
+        
+        //add the last part:
+        var last = list.getRange(0, splits[0]);
+        last.addAll(list.getRange(splits.last(), list.length - splits.last()));
+        result.add(last);
+      }
     }
 
     return result;
@@ -128,10 +197,12 @@ class AreasProcessing {
 
   static void processNewSegment(AreasData data, AreasSegment segment)
   {
+    //just try to add new area on both sides
+    
     var segs = findAreaClockwise(segment.p0, segment);
     if (segs != null)
     {
-      var areas = extractProperAreas(segs);
+      var areas = removeRepeatedSegments(segs);
       for(var area in areas)
       {
         tryNewArea(data, area);
@@ -141,7 +212,7 @@ class AreasProcessing {
     segs = findAreaClockwise(segment.p1, segment);
     if (segs != null)
     {
-      var areas = extractProperAreas(segs);
+      var areas = removeRepeatedSegments(segs);
       for(var area in areas)
       {
         tryNewArea(data, area);
@@ -149,25 +220,138 @@ class AreasProcessing {
     }
   }
 
-  static void processChangedArea(AreasData data, AreasArea area)
+  
+  static void processChanges(AreasData data, List<AreasArea> areas, List<AreasSegment> segments)
   {
+    //Split the areas into contigous parts
+    List<AreaPart> parts = [];
+    List<AreasArea> areasToUpdate = [];
+    
+    for(var a in areas)
+    {
+      List<List<AreasSegment>> segs = extractContigousSegments(a.segments);
+      
+      if (segs.length == 1 && segs[0].length == a.segments.length)
+      {
+        if (a.segments.length < 3)
+        {
+          //Proper area needs at least 3 segments
+          data.removeArea(a);
+          
+        }
+        //no change, all as before, skip this
+      }
+      else
+      {
+        areasToUpdate.add(a);
+        
+        for (var x in segs)
+        {
+          if (x.length == 1)
+          {
+            //TODO; not sure if there is anything we can do here.
+            continue;
+          }
+          
+          parts.add(new AreaPart(a, x));
+        }
+      }
+    }
+    
+    //Take one part at a time and make a full area or out of it
+    while (parts.length > 0)
+    {
+      AreaPart p = parts.last();
+      
+      var secondPoint = p.segments[0].commonPoint(p.segments[1]);
+      var firstPoint = p.segments[0].otherEnd(secondPoint);
+      List<AreasSegment> fullArea = findAreaStartingHere(firstPoint, p.segments[0]);
+      if (fullArea == null)
+      {
+        //TODO: oops, what now?
+        continue;
+      }
+   
+      List<AreaPart> match = matchParts(fullArea, parts);
+      
+      if (isOuterShate(fullArea))
+      {
+        //Outer, keep each part separate
+        for(var m in match)
+        {
+          data.newArea(m.segments);
+          //TODO: transfer tags.
+        }
+      }
+      else
+      {
+        //Inner, try to join parts
+        int startIndex = 0;
+        AreasArea aa = null;
+        
+        for (AreaPart p in match)
+        {
+            if (aa == null)
+            {
+              aa = p.area;
+            }
+            else if (aa != p.area) 
+            {
+              //TODO: Automatic merge parts areas have same tags.
+              //split part
+              data.newArea(fullArea.getRange(startIndex, p.position + p.segments.length));
+              startIndex = p.position + p.segments.length;
+            }
+        }
+                
+      } 
+      
+      //remove parts from list
+      for(var x in match) parts.removeRange(parts.indexOf(x), 1);
+    }
+    
+    //Delete the old stuff
+    for(AreasArea x in areasToUpdate)
+    {
+      data.removeArea(x);
+    }
+    
+    //add areas if new segments
+    for(AreasSegment seg in segments)
+    {
+      AreasProcessing.processNewSegment(data, seg);
+    }
 
-    if (area.segments.length < 3)
+  }
+  
+  static List<AreaPart> matchParts(List<AreasSegment> segments, List<AreaPart> parts)
+  {
+    List<AreaPart> result = [];
+
+    for(var i = 0; i < segments.length; i++)
     {
-      data.removeArea(a);
+      var seg = segments[i];
+      var nextSeg = segments[(i+1)%segments.length];
+      
+      for (AreaPart p in parts)
+      {
+        int j = 0;
+        while(i+j < segments.length && j < p.segments.length && p.segments[j] == segments[i+j]) j++;
+        
+        if (j == p.segments.length)
+        {
+          p.position = i;
+          result.add(p);
+          i += j-1;
+        }
+      }
     }
-    else
-    {
-      //TODO:
-    }
+    
+    return result;
   }
 
-  static void tryNewArea(AreasData data, List<AreasSegment> segments)
+  static bool isOuterShate(List<AreasSegment> segments)
   {
-    assert(segments != null);
-    assert(segments.length >= 2);
-
-    //check if this is outer shape
     double angle = 0.0;
 
     var p0 = null;
@@ -182,8 +366,19 @@ class AreasProcessing {
     }
 
     //the shape should go clockwise, counterclockwise means outer shape
-    if (angle <= 0)
-      return;
+    return (angle <= 0);
+  }
+  
+  static AreasArea tryNewArea(AreasData data, List<AreasSegment> segments)
+  {
+    assert(segments != null);
+    assert(segments.length >= 2);
+
+    //check if this is outer shape
+    if (isOuterShate(segments))
+    {
+      return null;
+    }
 
     //check if the shape has zero volume
     Map<AreasSegment, int> segmentTimes = new Map<AreasSegment, int>();
@@ -208,23 +403,31 @@ class AreasProcessing {
     }
 
     if (!hasVolume)
-      return;
+      return null;
 
     //check if such shape already exists
-    var commonShapes = [];
+    List<AreasArea> commonShapes = [];
     commonShapes.addAll(segments[0].areas);
 
     for (var seg in segments)
     {
-      commonShapes.filter((x) => seg.areas.indexOf(x) != -1);
+      commonShapes = commonShapes.filter((x) => seg.areas.indexOf(x) != -1);
     }
 
     if (commonShapes.length > 0)
-      return;
+      return commonShapes[0];
 
     //add new area
-    data.newArea(segments);
-
+    return data.newArea(segments);
   }
 
+}
+
+class AreaPart
+{
+  AreasArea area;
+  List<AreasSegment> segments;
+  int position;
+  
+  AreaPart(var a, var s){area = a; segments = s; position = -1;}
 }

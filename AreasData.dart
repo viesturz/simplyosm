@@ -513,24 +513,13 @@ class AreasData implements IData {
   
   void _updateAreasAfterEdit(AreasChange changes)
   {
-     var segsToCheck = new List.from(changes.newSegments);
-     segsToCheck.addAll(changes.changedSegments.getKeys());
+    var segsToCheck = new List.from(changes.newSegments);
+    segsToCheck.addAll(changes.changedSegments.getKeys());
 
-     var areasToCheck = new List.from(changes.changedAreas.getKeys());
-     
-     //update changed areas
-    for(var a in areasToCheck)
-    {
-      AreasProcessing.processChangedArea(this, a);
-    }
-
-    for(AreasSegment seg in segsToCheck)
-    {
-      AreasProcessing.processNewSegment(this, seg);
-    }
-
-  }
-  
+    var areasToCheck = new List.from(changes.changedAreas.getKeys());
+    
+    AreasProcessing.processChanges(this, areasToCheck, segsToCheck);
+  }  
 
   void _mergeParralelSegments(AreasSegment s1, AreasSegment s2)
   {
@@ -604,6 +593,15 @@ class AreasSegment implements Hashable{
       return this.p1;
     assert(false);
   }
+
+  AreasPoint hasCommonPoint(AreasSegment s){
+    if (this.p0 == s.p0 || this.p0 == s.p1)
+      return this.p0;
+    if (this.p1 == s.p0 || this.p1 == s.p1)
+      return this.p1;
+    return null;
+  }
+
   
   void _changeEnd(AreasPoint from, AreasPoint to){
       if (from == this.p0)
@@ -662,7 +660,7 @@ class AreasArea implements Hashable{
 
   AreasPoint startPoint()
   {
-    return this.segments[0].commonPoint(this.segments.last());
+    return this.segments[0].hasCommonPoint(this.segments.last());
   }
   
   void removeSegment(AreasSegment segment)
